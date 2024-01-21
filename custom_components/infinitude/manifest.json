@@ -1,0 +1,14 @@
+{
+  "domain": "infinitude",
+  "name": "Infinitude",
+  "codeowners": ["@MizterB"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/MizterB/homeassistant-infinitude-2024",
+  "homekit": {},
+  "iot_class": "local_polling",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "version": "2024.1"
+}
