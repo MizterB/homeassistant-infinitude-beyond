@@ -209,11 +209,6 @@ class Infinitude:
             _LOGGER.debug("Energy changed: %s", changes)
         self._energy = energy
 
-    @property
-    def energy(self) -> dict:
-        """Get the energy data from Infinitude."""
-        return self._energy.get("energy", {})
-
 
 class InfinitudeSystem:
     """Representation of system-wide Infinitude data."""
@@ -228,12 +223,17 @@ class InfinitudeSystem:
         return self._infinitude._config
 
     @property
-    def _status(self):
+    def _status(self) -> dict:
         """Raw Infinitude status data for the system."""
         return self._infinitude._status
 
     @property
-    def _profile(self):
+    def _energy(self) -> dict:
+        """Raw Infinitude energy data for the system."""
+        return self._infinitude._energy
+
+    @property
+    def _profile(self) -> dict:
         """Raw Infinitude profile data for the system."""
         return self._infinitude._profile
 
@@ -422,7 +422,7 @@ class InfinitudeZone:
         return zone_config
 
     @property
-    def _status(self):
+    def _status(self) -> dict:
         """Raw Infinitude status data for the zone."""
         all_zones = self._infinitude._status.get("zones", {}).get("zone", [])
         zone_status = next(
@@ -430,7 +430,7 @@ class InfinitudeZone:
         )
         return zone_status
 
-    def _update_activities(self):
+    def _update_activities(self) -> None:
         while self._activity_next is None:
             dt = self._infinitude.system.local_time
             day_name = dt.strftime("%A")
@@ -698,6 +698,7 @@ class InfinitudeZone:
 
         endpoint = f"/api/{self.id}/hold"
         await self._infinitude._post(endpoint, data)
+        await self._infinitude.update()
 
     async def set_temperature(
         self,
@@ -735,6 +736,7 @@ class InfinitudeZone:
 
         # Hold on the updated 'manual' activity until the next schedule change
         await self.set_hold_mode(mode=HoldMode.UNTIL, activity=Activity.MANUAL)
+        await self._infinitude.update()
 
     async def set_fan_mode(self, fan_mode: FanMode) -> None:
         """Set the fan mode."""
@@ -748,3 +750,4 @@ class InfinitudeZone:
 
         # Hold on the updated 'manual' activity until the next schedule change
         await self.set_hold_mode(mode=HoldMode.UNTIL, activity=Activity.MANUAL)
+        await self._infinitude.update()
