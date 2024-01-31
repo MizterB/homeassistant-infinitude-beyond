@@ -48,6 +48,7 @@ class Infinitude:
         self._status: dict = {}
         self._config: dict = {}
         self._energy: dict = {}
+        self._profile: dict = {}
 
         if not self._session or self._session.closed:
             self._session = ClientSession()
@@ -67,14 +68,15 @@ class Infinitude:
         except ClientError as e:
             _LOGGER.error(e)
 
-    async def _put(self, endpoint: str, data: dict, **kwargs) -> dict:
-        """Make a PUT request to Infinitude."""
+    async def _post(self, endpoint: str, data: dict, **kwargs) -> dict:
+        """Make a POST request to Infinitude."""
         url = f"{self._url_base}{endpoint}"
         try:
-            async with self._session.put(url, data=data, **kwargs) as resp:
-                data: dict = await resp.json(content_type=None)
+            async with self._session.post(url, data=data, **kwargs) as resp:
                 resp.raise_for_status()
-                return data
+                resp_json: dict = await resp.json(content_type=None)
+                _LOGGER.debug(f"POST to {url} with {data} returned {resp_json}")
+                return resp_json
         except ClientError as e:
             _LOGGER.error(e)
 
@@ -118,7 +120,8 @@ class Infinitude:
 
     async def _fetch_config(self) -> dict:
         """Retrieve configuration data from Infinitude."""
-        data = await self._get("/api/config/")
+        resp = await self._get("/api/config/")
+        data = resp.get("data", {})
         status = self._simplify_json(data)
         return status
 
@@ -128,17 +131,28 @@ class Infinitude:
         energy = self._simplify_json(data)
         return energy
 
+    async def _fetch_profile(self) -> dict:
+        """Retrieve profile data from Infinitude."""
+        resp = await self._get("/profile.json")
+        data = resp.get("system_profile", {})
+        profile = self._simplify_json(data)
+        return profile
+
     async def connect(self) -> None:
         """Connect to Infinitude."""
         try:
             async with asyncio.timeout(UPDATE_TIMEOUT):
                 _LOGGER.debug("Connecting to Infinitude")
-                status, config, energy = await asyncio.gather(
-                    self._fetch_status(), self._fetch_config(), self._fetch_energy()
+                status, config, energy, profile = await asyncio.gather(
+                    self._fetch_status(),
+                    self._fetch_config(),
+                    self._fetch_energy(),
+                    self._fetch_profile(),
                 )
                 self._status = status
                 self._config = config
                 self._energy = energy
+                self._profile = profile
 
         except asyncio.TimeoutError as e:
             _LOGGER.error(
@@ -157,7 +171,7 @@ class Infinitude:
             self.zones[zone_id]._update_activities()
 
     async def update(self) -> bool:
-        """Update all data from Infinitude."""
+        """Update variable data from Infinitude."""
         try:
             async with asyncio.timeout(UPDATE_TIMEOUT):
                 _LOGGER.debug("Updating from Infinitude")
@@ -219,6 +233,43 @@ class InfinitudeSystem:
         return self._infinitude._status
 
     @property
+    def _profile(self):
+        """Raw Infinitude profile data for the system."""
+        return self._infinitude._profile
+
+    @property
+    def brand(self) -> str | None:
+        """Brand of the system."""
+        val = self._profile.get("brand")
+        if not val:
+            return None
+        return str(val)
+
+    @property
+    def model(self) -> str | None:
+        """Model of the system."""
+        val = self._profile.get("model")
+        if not val:
+            return None
+        return str(val)
+
+    @property
+    def serial(self) -> str | None:
+        """Serial number of the system."""
+        val = self._profile.get("serial")
+        if not val:
+            return None
+        return str(val)
+
+    @property
+    def firmware(self) -> str | None:
+        """Firmware revision of the system."""
+        val = self._profile.get("firmware")
+        if not val:
+            return None
+        return str(val)
+
+    @property
     def temperature_unit(self) -> TemperatureUnit | None:
         """Unit of temperature used by the system."""
         val = self._status.get("cfgem")
@@ -260,6 +311,13 @@ class InfinitudeSystem:
         if mode is None:
             _LOGGER.warn("'%s' is an unknown HVACMode", mode)
         return mode
+
+    async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        """Set the HVAC mode."""
+
+        endpoint = f"/api/config"
+        data = {"mode": f"{hvac_mode.value}"}
+        await self._infinitude._post(endpoint, data)
 
     @property
     def filter_level(self) -> int | None:
@@ -454,6 +512,17 @@ class InfinitudeZone:
         return int(val)
 
     @property
+    def fan_mode(self) -> FanMode | None:
+        """Fan mode."""
+        val = self._status.get("fan")
+        if not val:
+            return None
+        mode = next((m for m in FanMode if m.value == val), None)
+        if mode is None:
+            _LOGGER.warn("'%s' is an unknown FanMode", mode)
+        return mode
+
+    @property
     def hvac_mode(self) -> HVACMode | None:
         """HVAC mode used by the system."""
         return self._infinitude.system.hvac_mode
@@ -574,3 +643,108 @@ class InfinitudeZone:
         if occupancy is None:
             _LOGGER.warn("'%s' is an unknown Occupancy", occupancy)
         return occupancy
+
+    async def set_hold_mode(
+        self,
+        mode: HoldMode | None = None,
+        activity: Activity | None = None,
+        until: datetime | None = None,
+    ) -> None:
+        """Set hold mode.
+
+        Default is to hold the current activity until the next scheduled activity
+        """
+
+        # Default mode: Until time or next activity
+        if mode is None:
+            mode = HoldMode.UNTIL
+
+        # Default activity: current activity
+        if activity is None:
+            activity = self.activity_current
+
+        # Default until: Next activity time
+        if until is None:
+            until = self.activity_next_start
+
+        # Round until to the nearest 15-min interval
+        until_min = until.minute
+        nearest_fifteen = int(round(until_min / 15) * 15)
+        until = until + timedelta(minutes=nearest_fifteen - until_min)
+
+        # Convert until to string
+        until_str = until.strftime("%H:%M")
+
+        # Use dedicated API endpoint for hold
+        # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L194
+        if mode == HoldMode.OFF:
+            data = {
+                "hold": HoldState.OFF.value,
+                "activity": "",
+                "until": "",
+            }
+        elif mode == HoldMode.INDEFINITE:
+            data = {
+                "hold": HoldState.ON.value,
+                "activity": activity.value,
+                "until": "forever",
+            }
+        elif mode == HoldMode.UNTIL:
+            data = {
+                "hold": HoldState.ON.value,
+                "activity": activity.value,
+                "until": until_str,
+            }
+
+        endpoint = f"/api/{self.id}/hold"
+        await self._infinitude._post(endpoint, data)
+
+    async def set_temperature(
+        self,
+        temperature: float | None = None,
+        temperature_heat: float | None = None,
+        temperature_cool: float | None = None,
+    ) -> None:
+        """Set new target temperature."""
+
+        cool = self.temperature_cool
+        if temperature_cool:
+            cool = temperature_cool
+        elif temperature:
+            cool = temperature
+
+        heat = self.temperature_heat
+        if temperature_heat:
+            heat = temperature_heat
+        elif temperature:
+            heat = temperature
+
+        if heat > cool:
+            raise ValueError(
+                "Heating temperature (%s) cannot be greater than cooling temperature (%s)",
+                heat,
+                cool,
+            )
+
+        # Update the 'manual' activity with the updated temperatures
+        # Use dedicated API endpoint for activity config
+        # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
+        data = {"htsp": f"{heat:.1f}", "clsp": f"{cool:.1f}"}
+        await self._infinitude._post(endpoint, data)
+
+        # Hold on the updated 'manual' activity until the next schedule change
+        await self.set_hold_mode(mode=HoldMode.UNTIL, activity=Activity.MANUAL)
+
+    async def set_fan_mode(self, fan_mode: FanMode) -> None:
+        """Set the fan mode."""
+
+        # Update the 'manual' activity with the updated fan mode
+        # Use dedicated API endpoint for activity config
+        # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
+        data = {"fan": f"{fan_mode.value}"}
+        await self._infinitude._post(endpoint, data)
+
+        # Hold on the updated 'manual' activity until the next schedule change
+        await self.set_hold_mode(mode=HoldMode.UNTIL, activity=Activity.MANUAL)

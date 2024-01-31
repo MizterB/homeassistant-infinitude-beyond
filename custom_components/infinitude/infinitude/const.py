@@ -26,7 +26,7 @@ class HoldMode(Enum):
 class FanMode(Enum):
     """Fan modes reported by Infinitude (fan)."""
 
-    OFF = "off"
+    AUTO = "off"
     HIGH = "high"
     MEDIUM = "med"
     LOW = "low"
