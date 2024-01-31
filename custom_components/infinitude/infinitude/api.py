@@ -29,14 +29,20 @@ class Infinitude:
     """Object for interacting with the Infinitude API."""
 
     def __init__(
-        self, host: str, port: int, *, session: Optional[ClientSession] = None
+        self,
+        host: str,
+        port: int = 3000,
+        ssl: bool = False,
+        *,
+        session: Optional[ClientSession] = None,
     ) -> None:
         """Initialize the Infinitude API."""
         self.host: str = host
         self.port: str = port
+        self.ssl = ssl
         self._session: ClientSession = session
 
-        self._protocol: str = "http"
+        self._protocol: str = "https" if self.ssl else "http"
         self._url_base: str = f"{self._protocol}://{self.host}:{self.port}"
 
         self._status: dict = {}
@@ -112,15 +118,9 @@ class Infinitude:
 
     async def _fetch_config(self) -> dict:
         """Retrieve configuration data from Infinitude."""
-        resp = await self._get("/api/config/")
-        status = resp.get("status")
-        if status != "success":
-            raise Exception(
-                f"Fetch of config was not successful. Status value in the response was '{status}'."
-            )
-        data = resp.get("data")
-        config = self._simplify_json(data)
-        return config
+        data = await self._get("/api/config/")
+        status = self._simplify_json(data)
+        return status
 
     async def _fetch_energy(self) -> dict:
         """Retrieve energy data from Infinitude."""
@@ -147,7 +147,7 @@ class Infinitude:
                 self.port,
                 UPDATE_TIMEOUT,
             )
-            raise
+            raise ConnectionError(e)
 
         self.system = InfinitudeSystem(self)
         self.zones = {}
@@ -169,12 +169,10 @@ class Infinitude:
                 await self._update_energy(energy)
         except asyncio.TimeoutError as e:
             _LOGGER.error("Update timed out after %s seconds", UPDATE_TIMEOUT)
-            return False
+            raise TimeoutError(e)
 
         for zone in self.zones.values():
             zone._update_activities()
-
-        return True
 
     async def _update_status(self, status) -> None:
         """Status update handler."""
@@ -245,7 +243,7 @@ class InfinitudeSystem:
             localtime_str = matches.group(1)
             localtime_dt = datetime.strptime(localtime_str, "%Y-%m-%dT%H:%M:%S")
         except TypeError:
-            _LOGGER.info(
+            _LOGGER.debug(
                 "Unable to convert system localTime '%s' to datetime. Using now() instead.",
                 localtime_str,
             )
@@ -505,12 +503,17 @@ class InfinitudeZone:
         return activity
 
     @property
-    def hold_until(self) -> str | None:
-        """Hold until time as "HH:MM"."""
+    def hold_until(self) -> datetime | None:
+        """Hold until time."""
         val = self._status.get("otmr")
         if not isinstance(val, str):
             return None
-        return val
+        until_hh, until_mm = val.split(":")
+        dt = self._infinitude.system.local_time
+        until_dt = datetime(dt.year, dt.month, dt.day, int(until_hh), int(until_mm))
+        if until_dt < dt:
+            until_dt = until_dt + timedelta(days=1)
+        return until_dt
 
     @property
     def hold_mode(self) -> HoldMode | None:
