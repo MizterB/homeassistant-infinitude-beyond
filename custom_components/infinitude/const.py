@@ -4,13 +4,7 @@ from enum import Enum
 
 DOMAIN = "infinitude"
 
-
-class Preset(Enum):
-    """Climate presets supported by integration."""
-
-    SCHEDULE = "schedule"
-    HOME = "home"
-    AWAY = "away"
-    SLEEP = "sleep"
-    WAKE = "wake"
-    MANUAL = "override"
+PRESET_SCHEDULE = "schedule"
+PRESET_WAKE = "wake"
+PRESET_OVERRIDE = "override"
+PRESET_HOLD = "HOLD"
