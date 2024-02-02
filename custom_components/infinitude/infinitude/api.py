@@ -1,7 +1,7 @@
 """Define a base client for interacting with Infinitude."""
 import asyncio
-import logging
 from datetime import datetime, timedelta
+import logging
 from re import match
 from typing import Optional
 
@@ -431,8 +431,8 @@ class InfinitudeZone:
         return zone_status
 
     def _update_activities(self) -> None:
+        dt = self._infinitude.system.local_time
         while self._activity_next is None:
-            dt = self._infinitude.system.local_time
             day_name = dt.strftime("%A")
             program = next(
                 (day for day in self._config["program"]["day"] if day["id"] == day_name)
@@ -563,7 +563,7 @@ class InfinitudeZone:
     @property
     def hold_activity(self) -> Activity | None:
         """Hold activity."""
-        val = self._status.get("holdActivity")
+        val = self._config.get("holdActivity")
         if not val:
             return None
         activity = next((a for a in Activity if a.value == val), None)
