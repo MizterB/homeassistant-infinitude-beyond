@@ -1,10 +1,8 @@
 """Constants for the Infinitude integration."""
 
-from enum import Enum
-
 DOMAIN = "infinitude"
 
-PRESET_SCHEDULE = "schedule"
-PRESET_WAKE = "wake"
-PRESET_OVERRIDE = "override"
-PRESET_HOLD = "HOLD"
+PRESET_SCHEDULE = "Scheduled activity"
+PRESET_WAKE = "Wake"
+PRESET_HOLD = "Hold indefinitely"
+PRESET_HOLD_UNTIL = "Hold until next activity"
