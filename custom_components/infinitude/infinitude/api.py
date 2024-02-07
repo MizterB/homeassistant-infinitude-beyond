@@ -1,9 +1,10 @@
 """Define a base client for interacting with Infinitude."""
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from re import match
 from typing import Optional
+import zoneinfo
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
@@ -42,9 +43,6 @@ class Infinitude:
         self.ssl = ssl
         self._session: ClientSession = session
 
-        self._protocol: str = "https" if self.ssl else "http"
-        self._url_base: str = f"{self._protocol}://{self.host}:{self.port}"
-
         self._status: dict = {}
         self._config: dict = {}
         self._energy: dict = {}
@@ -57,9 +55,17 @@ class Infinitude:
         self.zones: dict[int, InfinitudeZone]
         self.energy: dict[str, str]
 
+    @property
+    def url(self):
+        """Get the base URL to connect to Infinitude."""
+        protocol = "http"
+        if self.ssl:
+            protocol = "https"
+        return f"{protocol}://{self.host}:{self.port}"
+
     async def _get(self, endpoint: str, **kwargs) -> dict:
         """Make a GET request to Infinitude."""
-        url = f"{self._url_base}{endpoint}"
+        url = f"{self.url}{endpoint}"
         try:
             async with self._session.get(url, **kwargs) as resp:
                 data: dict = await resp.json(content_type=None)
@@ -70,7 +76,7 @@ class Infinitude:
 
     async def _post(self, endpoint: str, data: dict, **kwargs) -> dict:
         """Make a POST request to Infinitude."""
-        url = f"{self._url_base}{endpoint}"
+        url = f"{self.url}{endpoint}"
         try:
             async with self._session.post(url, data=data, **kwargs) as resp:
                 resp.raise_for_status()
@@ -277,7 +283,7 @@ class InfinitudeSystem:
             return None
         unit = next((u for u in TemperatureUnit if u.value == val), None)
         if unit is None:
-            _LOGGER.warn("'%s' is an unknown TemperatureUnit", unit)
+            _LOGGER.warning("'%s' is an unknown TemperatureUnit", unit)
         return unit
 
     @property
@@ -285,21 +291,48 @@ class InfinitudeSystem:
         """Local time."""
         localtime_str = self._status.get("localTime")
         try:
-            # localTime string can include a TZ offset in some systems.  It should be stripped off
-            # since the timestamp is already in the local time.
+            # localTime string does not always contain a time zone
             matches = match(
                 r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2})?$",
                 localtime_str,
             )
-            localtime_str = matches.group(1)
-            localtime_dt = datetime.strptime(localtime_str, "%Y-%m-%dT%H:%M:%S")
+            localtime_naive_str = matches.group(1)
+            localtime_naive_dt = datetime.strptime(
+                localtime_naive_str, "%Y-%m-%dT%H:%M:%S"
+            )
         except TypeError:
             _LOGGER.debug(
                 "Unable to convert system localTime '%s' to datetime. Using now() instead.",
                 localtime_str,
             )
-            localtime_dt = datetime.now()
+            localtime_naive_dt = datetime.now()
+        # Add TZ data
+        localtime_dt = localtime_naive_dt.replace(tzinfo=self.local_timezone)
         return localtime_dt
+
+    @property
+    def local_timezone(self) -> timezone:
+        """Gets the time zone.
+
+        Returns the value provided by Infinitude's localTime if provided.
+        Otherwise, returns this host system's timezone
+        """
+        localtime_str = self._status.get("localTime")
+        # localTime string does not always contain a time zone
+        # Use if provided, otherwise assume the system TZ
+        matches = match(
+            r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2})?$",
+            localtime_str,
+        )
+        # Parse the TZ offset if found
+        if matches.lastindex == 2:
+            offset_str = matches.group(2)
+            hours, minutes = map(int, offset_str.split(":"))
+            offset = timedelta(hours=hours, minutes=minutes)
+            tz = timezone(offset)
+        else:
+            tz = datetime.now().astimezone().tzinfo
+        return tz
 
     @property
     def hvac_mode(self) -> HVACMode | None:
@@ -432,26 +465,42 @@ class InfinitudeZone:
 
     def _update_activities(self) -> None:
         dt = self._infinitude.system.local_time
-        while self._activity_next is None:
+        activity_next = None
+        while activity_next is None:
             day_name = dt.strftime("%A")
             program = next(
-                (day for day in self._config["program"]["day"] if day["id"] == day_name)
+                day for day in self._config["program"]["day"] if day["id"] == day_name
             )
             for period in program["period"]:
                 if period["enabled"] == "off":
                     continue
                 period_hh, period_mm = period["time"].split(":")
                 period_dt = datetime(
-                    dt.year, dt.month, dt.day, int(period_hh), int(period_mm)
+                    year=dt.year,
+                    month=dt.month,
+                    day=dt.day,
+                    hour=int(period_hh),
+                    minute=int(period_mm),
+                    tzinfo=self._infinitude.system.local_timezone,
                 )
                 if period_dt < dt:
-                    self._activity_scheduled = period["activity"]
-                    self._activity_scheduled_start = period_dt
+                    activity_scheduled = period["activity"]
+                    activity_scheduled_start = period_dt
                 if period_dt >= dt:
-                    self._activity_next = period["activity"]
-                    self._activity_next_start = period_dt
+                    activity_next = period["activity"]
+                    activity_next_start = period_dt
                     break
-            dt = datetime(year=dt.year, month=dt.month, day=dt.day) + timedelta(days=1)
+            dt = datetime(
+                year=dt.year,
+                month=dt.month,
+                day=dt.day,
+                tzinfo=self._infinitude.system.local_timezone,
+            ) + timedelta(days=1)
+
+        self._activity_scheduled = activity_scheduled
+        self._activity_scheduled_start = activity_scheduled_start
+        self._activity_next = activity_next
+        self._activity_next_start = activity_next_start
 
     @property
     def index(self):
@@ -564,7 +613,7 @@ class InfinitudeZone:
     def hold_activity(self) -> Activity | None:
         """Hold activity."""
         val = self._config.get("holdActivity")
-        if not val:
+        if not val or val == {}:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
@@ -579,7 +628,14 @@ class InfinitudeZone:
             return None
         until_hh, until_mm = val.split(":")
         dt = self._infinitude.system.local_time
-        until_dt = datetime(dt.year, dt.month, dt.day, int(until_hh), int(until_mm))
+        until_dt = datetime(
+            dt.year,
+            dt.month,
+            dt.day,
+            int(until_hh),
+            int(until_mm),
+            tzinfo=self._infinitude.system.local_timezone,
+        )
         if until_dt < dt:
             until_dt = until_dt + timedelta(days=1)
         return until_dt
