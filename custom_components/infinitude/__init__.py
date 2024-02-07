@@ -19,7 +19,7 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN
 from .infinitude.api import Infinitude
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,29 +87,46 @@ class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):
     def __init__(
         self,
         coordinator: InfinitudeDataUpdateCoordinator,
+        zone_id: str | None = None,
         **kwargs,
     ) -> None:
         """Init Infinitude entity."""
         self.infinitude = coordinator.infinitude
+        self.system = coordinator.infinitude.system
+        self.zone = None
+        if zone_id:
+            self.zone = coordinator.infinitude.zones.get(zone_id)
         super().__init__(coordinator)
 
     @property
+    def unique_id(self) -> str:
+        """Return the unique id."""
+        if self.zone:
+            return f"{self.system.serial}_zone_{self.zone.id}_{self.name}"
+        return f"{self.system.serial}_system_{self.name}"
+
+    @property
     def device_info(self) -> DeviceInfo:
-        """Return a device description for device registry."""
+        """Return a device description for device registry.
+
+        Each Infinitude zone is a separate device, plus a device for the overall system
+        """
+        if self.zone:
+            if self.zone.name and len(self.zone.name) > 0:
+                name = self.zone.name
+            else:
+                name = f"Zone {self.zone.id}"
+            identifier = f"{self.infinitude.system.serial}_zone_{self.zone.id}"
+        else:
+            name = "Infinitude System"
+            identifier = f"{self.system.serial}_system"
+
         return DeviceInfo(
-            identifiers={(DOMAIN, self.infinitude.system.serial)},
+            identifiers={(DOMAIN, identifier)},
             serial_number=self.infinitude.system.serial,
             manufacturer=self.infinitude.system.brand,
             model=self.infinitude.system.model,
-            name=f"{self.infinitude.host}:{self.infinitude.port}",
+            name=name,
             sw_version=self.infinitude.system.firmware,
             configuration_url=f"{self.infinitude.url}",
         )
-
-    # @abc.abstractproperty
-    # def unique_id(self) -> str:
-    #     """Return the unique ID for this entity."""
-
-    # @abc.abstractproperty
-    # def device_info(self) -> DeviceInfo:
-    #     """Returns the device info for the controller entity"""
