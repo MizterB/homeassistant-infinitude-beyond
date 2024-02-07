@@ -19,7 +19,7 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN
 from .infinitude.api import Infinitude
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE]
+PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,6 +103,7 @@ class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):
             model=self.infinitude.system.model,
             name=f"{self.infinitude.host}:{self.infinitude.port}",
             sw_version=self.infinitude.system.firmware,
+            configuration_url=f"{self.infinitude.url}",
         )
 
     # @abc.abstractproperty
