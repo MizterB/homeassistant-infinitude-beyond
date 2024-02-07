@@ -1,0 +1,34 @@
+# Describes the format for available Infinitude services
+
+set_hold_mode:
+  description: Sets the Hold Mode and Activity for an Infinitude zone
+  target:
+    entity:
+      integration: infinitude
+      domain: climate
+  fields:
+    mode:
+      selector:
+        select:
+          options:
+            - "hold"
+            - "hold_until"
+            - "per schedule"
+      description: "Name of the hold mode to apply.  If not provided, defaults to 'hold until'.  NOTE: 'hold until' expects an additional 'until' parameter to be provided."
+      example: "'hold', 'hold until', 'per schedule'"
+    until:
+      selector:
+        time:
+      description: "Time at which the hold expires and the normal schedule resumes.  Will be rounded to the nearest 15-minute interval.  If not provided, defaults to the start time of the next scheduled activity."
+      example: "'15:00', '15:15', '15:30', '15:45'"
+    activity:
+      selector:
+        select:
+          options:
+            - "home"
+            - "away"
+            - "sleep"
+            - "wake"
+            - "manual"
+      description: "Name of the activity profile to hold with.  If not provided, defaults to the current activity."
+      example: "'home', 'away', 'sleep', 'wake', 'manual'"

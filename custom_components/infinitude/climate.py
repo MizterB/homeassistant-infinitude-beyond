@@ -1,6 +1,9 @@
 """Climate for Infinitude."""
 
+from datetime import timedelta
 import logging
+
+import voluptuous as vol
 
 from homeassistant.components.climate import (
     FAN_AUTO,
@@ -18,6 +21,7 @@ from homeassistant.components.climate import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PRECISION_TENTHS, PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import InfinitudeDataUpdateCoordinator, InfinitudeEntity
@@ -34,6 +38,12 @@ from .infinitude.const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+ATTR_HOLD_ACTIVITY = "activity"
+ATTR_HOLD_MODE = "mode"
+ATTR_HOLD_UNTIL = "until"
+SERVICE_SET_HOLD_MODE = "set_hold_mode"
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -46,6 +56,20 @@ async def async_setup_entry(
     for zone in zones:
         entities.extend([InfinitudeClimate(coordinator, zone.id)])
     async_add_entities(entities)
+
+    platform = entity_platform.async_get_current_platform()
+
+    platform.async_register_entity_service(
+        SERVICE_SET_HOLD_MODE,
+        {
+            vol.Required(ATTR_HOLD_MODE): vol.In([hm.value for hm in InfHoldMode]),
+            vol.Required(ATTR_HOLD_ACTIVITY): vol.In([a.value for a in InfActivity]),
+            vol.Optional(ATTR_HOLD_UNTIL, default=None): vol.All(
+                cv.time_period, cv.positive_timedelta, lambda td: td.total_seconds()
+            ),
+        },
+        "async_set_hold_mode",
+    )
 
 
 class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
@@ -311,3 +335,15 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
             )
         else:
             _LOGGER.error("Invalid preset mode: %s", preset_mode)
+
+    async def async_set_hold_mode(self, mode, activity, until):
+        "Set the hold mode."
+        hold_mode = next((m for m in InfHoldMode if m.value == mode), None)
+        hold_activity = next((a for a in InfActivity if a.value == activity), None)
+        today = self.system.local_time.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        hold_until = today + timedelta(seconds=until)
+        await self.zone.set_hold_mode(
+            mode=hold_mode, activity=hold_activity, until=hold_until
+        )
