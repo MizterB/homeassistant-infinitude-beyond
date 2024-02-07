@@ -366,7 +366,7 @@ class InfinitudeSystem:
         val = self._status.get("humid")
         if not val:
             return None
-        state = next((s for s in HVACMode if s.value == val), None)
+        state = next((s for s in HumidifierState if s.value == val), None)
         if state is None:
             _LOGGER.warn("'%s' is an unknown HumidifierState", state)
         return state
