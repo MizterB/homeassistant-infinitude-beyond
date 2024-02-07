@@ -1,8 +1,8 @@
 """Binary sensors for Infinitude."""
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
@@ -25,6 +25,7 @@ class InfinitudeBinarySensorDescriptionMixin:
     """Mixin for Infinitude binary sensor."""
 
     value_fn: Callable[[InfinitudeEntity], StateType]
+    extra_state_attributes_fn: Callable[[InfinitudeEntity], dict | None]
 
 
 @dataclass(frozen=True)
@@ -39,7 +40,14 @@ SYSTEM_BINARY_SENSORS: list[InfinitudeBinarySensorDescription] = [
         key="humidifier_state",
         name="Humidifier state",
         value_fn=lambda entity: entity.system.humidifier_state == InfHumidifierState.ON,
-    )
+        extra_state_attributes_fn=None,
+    ),
+    InfinitudeBinarySensorDescription(
+        key="energy",
+        name="Energy",
+        value_fn=lambda entity: entity.system.energy is not None,
+        extra_state_attributes_fn=lambda entity: entity.system.energy,
+    ),
 ]
 
 ZONE_BINARY_SENSORS: tuple[InfinitudeBinarySensorDescription, ...] = ()
@@ -83,3 +91,10 @@ class InfinitudeBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
     def is_on(self) -> bool:
         """Return the state."""
         return self.entity_description.value_fn(self)
+
+    @property
+    def _attr_extra_state_attributes(self) -> dict | None:
+        """Return the extra state attributes."""
+        if self.entity_description.extra_state_attributes_fn is not None:
+            return self.entity_description.extra_state_attributes_fn(self)
+        return None

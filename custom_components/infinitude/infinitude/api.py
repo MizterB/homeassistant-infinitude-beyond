@@ -53,7 +53,6 @@ class Infinitude:
 
         self.system: InfinitudeSystem
         self.zones: dict[int, InfinitudeZone]
-        self.energy: dict[str, str]
 
     @property
     def url(self):
@@ -430,6 +429,14 @@ class InfinitudeSystem:
             else:
                 return 0
         return None
+
+    @property
+    def energy(self) -> dict | None:
+        """Energy data."""
+        if isinstance(self._energy, dict) and self._energy != {}:
+            return self._energy
+        else:
+            return None
 
 
 class InfinitudeZone:
