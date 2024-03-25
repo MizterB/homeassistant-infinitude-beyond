@@ -1,6 +1,6 @@
 """Constants for the Infinitude integration."""
 
-DOMAIN = "infinitude"
+DOMAIN = "infinitude_beyond"
 
 PRESET_SCHEDULE = "Scheduled activity"
 PRESET_WAKE = "Wake"
