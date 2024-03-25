@@ -36,7 +36,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PORT],
         entry.data[CONF_SSL],
     )
-    await coordinator.connect()
+    try:
+        await coordinator.connect()
+    except Exception as ex:
+        _LOGGER.error("Error connecting to Infinitude: %s", ex)
+        raise ConfigEntryNotReady from ex
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

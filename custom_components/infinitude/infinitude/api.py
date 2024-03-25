@@ -23,7 +23,8 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-UPDATE_TIMEOUT: int = 10
+CONNECT_TIMEOUT: int = 30
+UPDATE_TIMEOUT: int = 30
 
 
 class Infinitude:
@@ -146,7 +147,7 @@ class Infinitude:
     async def connect(self) -> None:
         """Connect to Infinitude."""
         try:
-            async with asyncio.timeout(UPDATE_TIMEOUT):
+            async with asyncio.timeout(CONNECT_TIMEOUT):
                 _LOGGER.debug("Connecting to Infinitude")
                 status, config, energy, profile = await asyncio.gather(
                     self._fetch_status(),
@@ -164,7 +165,7 @@ class Infinitude:
                 "Failed to connect to Infinitude at %s:%s after %s seconds",
                 self.host,
                 self.port,
-                UPDATE_TIMEOUT,
+                CONNECT_TIMEOUT,
             )
             raise ConnectionError(e)
 
