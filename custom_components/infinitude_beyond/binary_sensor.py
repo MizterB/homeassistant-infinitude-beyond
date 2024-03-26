@@ -5,7 +5,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity, BinarySensorEntityDescription)
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -91,7 +93,7 @@ class InfinitudeBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
         return self.entity_description.value_fn(self)
 
     @property
-    def _attr_extra_state_attributes(self) -> dict | None:
+    def extra_state_attributes(self) -> dict | None:
         """Return the extra state attributes."""
         if self.entity_description.extra_state_attributes_fn is not None:
             return self.entity_description.extra_state_attributes_fn(self)
