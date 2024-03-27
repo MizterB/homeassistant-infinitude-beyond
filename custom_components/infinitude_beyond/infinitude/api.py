@@ -1,10 +1,10 @@
 """Define a base client for interacting with Infinitude."""
+
 import asyncio
 from datetime import datetime, timedelta, timezone
 import logging
 from re import match
 from typing import Optional
-import zoneinfo
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
@@ -473,7 +473,10 @@ class InfinitudeZone:
 
     def _update_activities(self) -> None:
         dt = self._infinitude.system.local_time
+        activity_scheduled = None
+        activity_scheduled_start = None
         activity_next = None
+        activity_next_start = None
         while activity_next is None:
             day_name = dt.strftime("%A")
             program = next(
