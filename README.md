@@ -22,7 +22,7 @@ This custom component can be integrated into [HACS](https://github.com/hacs/inte
 
 # Configuration
 
-Configuration is done via the UI. Add the "Infinitude" integration via the Integration settings, then provide the hostname/IP and port of your Infinitude server in the configuration dialog.
+Configuration is done via the UI. Add the "Infinitude Beyond" integration via the Integration settings, then provide the hostname/IP and port of your Infinitude server in the configuration dialog.
 
 ## Changelog
 
