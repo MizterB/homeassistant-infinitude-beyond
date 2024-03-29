@@ -78,10 +78,17 @@ class Infinitude:
         """Make a POST request to Infinitude."""
         url = f"{self.url}{endpoint}"
         try:
+            _LOGGER.debug("POST %s with %s and %s", url, data, kwargs)
             async with self._session.post(url, data=data, **kwargs) as resp:
+                _LOGGER.debug(
+                    "POST RESPONSE from %s with %s and %s is: %s",
+                    url,
+                    data,
+                    kwargs,
+                    await resp.text(),
+                )
                 resp.raise_for_status()
                 resp_json: dict = await resp.json(content_type=None)
-                _LOGGER.debug(f"POST to {url} with {data} returned {resp_json}")
                 return resp_json
         except ClientError as e:
             _LOGGER.error(e)
@@ -100,22 +107,37 @@ class Infinitude:
 
     def _compare_data(self, old, new, path="") -> dict | None:
         """Recursively compare old and new data dicts and return the differences."""
+        if old is None or new is None:
+            return None
         diff = {}
-        for key in old.keys() | new.keys():
+        for key in old.keys() | new.keys():  # Union of keys
+            new_path = f"{path}/{key}" if path else key
+
             if key not in old:
-                diff[f"{path}/{key}"] = ("Missing in old", new[key])
+                diff[new_path] = ("Missing in old dict", new[key])
             elif key not in new:
-                diff[f"{path}/{key}"] = (old[key], "Missing in new")
+                diff[new_path] = (old[key], "Missing in new dict")
             elif isinstance(old[key], dict) and isinstance(new[key], dict):
-                deeper_diff = self._compare_data(
-                    old[key], new[key], path=f"{path}/{key}"
-                )
+                deeper_diff = self._compare_data(old[key], new[key], path=new_path)
                 if deeper_diff:
                     diff.update(deeper_diff)
+            elif isinstance(old[key], list) and isinstance(new[key], list):
+                # Compare list items individually for differences
+                for i, item1 in enumerate(old[key]):
+                    if i >= len(new[key]):
+                        diff[f"{new_path}[{i}]"] = (item1, "Missing in new list")
+                    elif isinstance(item1, dict) and isinstance(new[key][i], dict):
+                        deeper_diff = self._compare_data(
+                            item1, new[key][i], path=f"{new_path}[{i}]"
+                        )
+                        if deeper_diff:
+                            diff.update(deeper_diff)
+                    elif item1 != new[key][i]:
+                        diff[f"{new_path}[{i}]"] = (item1, new[key][i])
+                for i in range(len(old[key]), len(new[key])):
+                    diff[f"{new_path}[{i}]"] = ("Missing in old list", new[key][i])
             elif old[key] != new[key]:
-                diff[f"{path}/{key}"] = (old[key], new[key])
-        if diff == {}:
-            return None
+                diff[new_path] = (old[key], new[key])
         return diff
 
     async def _fetch_status(self) -> dict:
