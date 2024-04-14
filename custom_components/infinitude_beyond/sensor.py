@@ -105,12 +105,16 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
     InfinitudeSensorDescription(
         key="activity_current",
         name="Current activity",
-        value_fn=lambda entity: entity.zone.activity_current.value,
+        value_fn=lambda entity: (
+            entity.zone.activity_current.value if entity.zone.activity_current else None
+        )
     ),
     InfinitudeSensorDescription(
         key="activity_next",
         name="Next activity",
-        value_fn=lambda device: device.zone.activity_next.value,
+        value_fn=lambda entity: (
+            entity.zone.activity_next.value if entity.zone.activity_next else None
+        )
     ),
     InfinitudeSensorDescription(
         key="activity_next_start",
@@ -121,7 +125,9 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
     InfinitudeSensorDescription(
         key="activity_scheduled",
         name="Scheduled activity",
-        value_fn=lambda entity: entity.zone.activity_scheduled.value,
+        value_fn=lambda entity: (
+            entity.zone.activity_scheduled.value if entity.zone.activity_scheduled else None
+        )
     ),
     InfinitudeSensorDescription(
         key="activity_scheduled_start",
