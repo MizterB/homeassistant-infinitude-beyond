@@ -24,11 +24,6 @@ This custom component can be integrated into [HACS](https://github.com/hacs/inte
 
 Configuration is done via the UI. Add the "Infinitude Beyond" integration via the Integration settings, then provide the hostname/IP and port of your Infinitude server in the configuration dialog.
 
-## Changelog
+# Changelog
 
-**2024.3.0**
-- Initial release
-- Re-implement original functionality
-- Move most attributes to sensors
-- Introduce config flow
-- Automatically detect zones
+See [Releases](https://github.com/MizterB/homeassistant-infinitude-beyond/releases)
