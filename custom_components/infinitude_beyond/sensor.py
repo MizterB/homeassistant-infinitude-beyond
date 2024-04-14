@@ -57,6 +57,12 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         ),
     ),
     InfinitudeSensorDescription(
+        key="filter_level",
+        name="Filter level",
+        native_unit_of_measurement="%",
+        value_fn=lambda entity: entity.system.filter_level,
+    ),
+    InfinitudeSensorDescription(
         key="humidifier_level",
         name="Humidifier level",
         native_unit_of_measurement="%",
