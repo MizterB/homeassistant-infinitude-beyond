@@ -4,7 +4,7 @@ set_hold_mode:
   description: Sets the Hold Mode and Activity for an Infinitude zone
   target:
     entity:
-      integration: infinitude
+      integration: infinitude_beyond   
       domain: climate
   fields:
     mode:
@@ -32,3 +32,20 @@ set_hold_mode:
             - "manual"
       description: "Name of the activity profile to hold with.  If not provided, defaults to the current activity."
       example: "'home', 'away', 'sleep', 'wake', 'manual'"
+
+set_heat_source:
+  description: Sets the Heat Source of the Infinitude equipment 
+  target:
+    entity:
+      integration: infinitude_beyond          
+      domain: climate
+  fields:
+    heatsource:
+      selector:
+        select:
+          options:
+            - "System"
+            - "Gas"
+            - "Heat Pump"
+      description: "Select the heat source of the equipment. 'System', 'Gas' or 'Heat Pump'"
+      example: "'System', 'Gas', 'Heat Pump'"

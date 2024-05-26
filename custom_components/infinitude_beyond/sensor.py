@@ -94,6 +94,26 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         value_fn=lambda entity: entity.system.airflow_cfm,
     ),
     InfinitudeSensorDescription(
+        key="furnace_status",
+        name="Furnace Status",
+        value_fn=lambda entity: entity.system.furnace_status,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_status",
+        name="Heatpump Status",
+        value_fn=lambda entity: entity.system.heatpump_status,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_mode",
+        name="Heatpump Mode",
+        value_fn=lambda entity: entity.system.heatpump_mode,
+    ),
+    InfinitudeSensorDescription(
+        key="heat_source",
+        name="Heat Source",
+        value_fn=lambda entity: entity.system.heat_source,
+    ),
+    InfinitudeSensorDescription(
         key="idu_modulation",
         name="IDU modulation",
         native_unit_of_measurement="%",
