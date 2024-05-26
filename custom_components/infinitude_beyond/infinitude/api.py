@@ -19,6 +19,7 @@ from .const import (
     HVACMode,
     Occupancy,
     TemperatureUnit,
+    HeatSource,  
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -150,8 +151,8 @@ class Infinitude:
         """Retrieve configuration data from Infinitude."""
         resp = await self._get("/api/config/")
         data = resp.get("data", {})
-        status = self._simplify_json(data)
-        return status
+        config = self._simplify_json(data)
+        return config
 
     async def _fetch_energy(self) -> dict:
         """Retrieve energy data from Infinitude."""
@@ -435,6 +436,67 @@ class InfinitudeSystem:
         if not cfm:
             return None
         return float(cfm)
+
+    @property
+    def furnace_status(self) -> str | None:
+        """ System Furnace Status """
+        idu = self._status.get("idu")
+        if not idu:
+            return None
+        fstat = idu.get("opstat")
+        if not fstat:
+            return None
+        return str(fstat)
+        
+    @property
+    def heatpump_status(self) -> str | None:
+        """ System Furnace Status """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        hstat = odu.get("opstat")
+        if not hstat:
+            return None
+        return str(hstat)    
+
+    @property
+    def heatpump_mode(self) -> str | None:
+        """ System Furnace Status """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        hmod = odu.get("opmode")
+        if not hmod:
+            return None
+        return str(hmod)    
+
+    @property
+    def heat_source(self) -> str | None:
+        """ System Furnace Status """
+        hs = self._config.get("heatsource")
+        if not hs:
+            return None
+        if hs  == "idu only":
+           return str(HeatSource.GAS.value) 
+        elif hs  == "odu only":
+           return str(HeatSource.HEATPUMP.value) 
+        elif hs  == "system":
+           return str(HeatSource.SYSTEM.value) 
+        else:
+           return None  
+            
+    async def set_heat_source(self, heatsource:HeatSource) -> None:
+        if heatsource == HeatSource.SYSTEM:
+            data = {"heatsource": "system"}
+        elif heatsource == HeatSource.GAS:
+            data = {"heatsource": "idu only"}
+        elif heatsource == HeatSource.HEATPUMP:
+            data = {"heatsource": "odu only"}			
+        _LOGGER.debug("API Call : {}".format(data))	
+        endpoint = f"/api/config"
+        await self._infinitude._post(endpoint, data)
+        await self._infinitude.update()
+
 
     @property
     def idu_modulation(self) -> int | None:

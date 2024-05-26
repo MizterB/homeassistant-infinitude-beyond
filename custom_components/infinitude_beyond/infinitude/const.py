@@ -83,3 +83,10 @@ class HumidifierState(Enum):
 
     ON = "on"
     OFF = "off"
+
+class HeatSource(Enum):
+    """Heat Source currently used """
+
+    SYSTEM = "System"
+    GAS = "Gas"
+    HEATPUMP = "Heat Pump"

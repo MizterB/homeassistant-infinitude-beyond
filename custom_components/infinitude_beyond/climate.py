@@ -33,6 +33,7 @@ from .infinitude.const import (
     HVACAction as InfHVACAction,
     HVACMode as InfHVACMode,
     TemperatureUnit as InfTemperatureUnit,
+    HeatSource as InfHeatSource, 
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +43,8 @@ ATTR_HOLD_ACTIVITY = "activity"
 ATTR_HOLD_MODE = "mode"
 ATTR_HOLD_UNTIL = "until"
 SERVICE_SET_HOLD_MODE = "set_hold_mode"
-
+ATTR_HEAT_SOURCE = "heatsource"
+SERVICE_SET_HEAT_SOURCE = "set_heat_source" 
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -64,11 +66,18 @@ async def async_setup_entry(
         {
             vol.Required(ATTR_HOLD_MODE): vol.In([hm.value for hm in InfHoldMode]),
             vol.Required(ATTR_HOLD_ACTIVITY): vol.In([a.value for a in InfActivity]),
-            vol.Optional(ATTR_HOLD_UNTIL, default=None): vol.All(
-                cv.time_period, cv.positive_timedelta, lambda td: td.total_seconds()
-            ),
+            vol.Optional(ATTR_HOLD_UNTIL, default=None): vol.Any(None, vol.All(             
+                cv.time_period, cv.positive_timedelta, lambda td: td.total_seconds() ))
         },
         "async_set_hold_mode",
+    )
+    
+    platform.async_register_entity_service(                 
+        SERVICE_SET_HEAT_SOURCE,
+        {
+            vol.Required(ATTR_HEAT_SOURCE): vol.In([hs.value for hs in InfHeatSource])           
+        },
+        "async_set_heat_source",
     )
 
 
@@ -84,6 +93,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     _attr_precision = PRECISION_TENTHS
     _attr_temperature_step = PRECISION_WHOLE
     _attr_name = "Thermostat"
+    _enable_turn_on_off_backwards_compatibility = False 
 
     def __init__(
         self,
@@ -343,7 +353,11 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         today = self.system.local_time.replace(
             hour=0, minute=0, second=0, microsecond=0
         )
-        hold_until = today + timedelta(seconds=until)
+        hold_until = None if until is None else (today + timedelta(seconds=until)) 
         await self.zone.set_hold_mode(
             mode=hold_mode, activity=hold_activity, until=hold_until
         )
+
+    async def async_set_heat_source(self, heatsource):
+        heat_source = next((hs for hs in InfHeatSource if hs.value == heatsource), None)
+        await self.system.set_heat_source(heatsource = heat_source)
