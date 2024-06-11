@@ -1,0 +1,18 @@
+{
+  "entity": {
+    "climate": {
+      "infinitude_beyond_translation": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "Scheduled activity": "mdi:clock-outline",
+              "Wake": "mdi:alarm",
+              "Hold indefinitely": "mdi:infinity",
+              "Hold until next activity": "mdi:motion-pause-outline"
+            }
+          }
+        }
+      }
+    }
+  }
+}
