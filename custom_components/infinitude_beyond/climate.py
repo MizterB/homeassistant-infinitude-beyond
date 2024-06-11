@@ -177,8 +177,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
             return HVACAction.HEATING
         elif self.zone.hvac_action == InfHVACAction.ACTIVE_COOL:
             return HVACAction.COOLING
-        else:
-            return HVACAction.IDLE
+        return HVACAction.IDLE
 
     @property
     def hvac_modes(self):
