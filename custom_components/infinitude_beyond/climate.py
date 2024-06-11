@@ -84,6 +84,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     _attr_precision = PRECISION_TENTHS
     _attr_temperature_step = PRECISION_WHOLE
     _attr_name = "Thermostat"
+    _attr_translation_key = "infinitude_beyond_translation"
 
     def __init__(
         self,
