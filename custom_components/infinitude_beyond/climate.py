@@ -3,8 +3,6 @@
 from datetime import timedelta
 import logging
 
-import voluptuous as vol
-
 from homeassistant.components.climate import (
     FAN_AUTO,
     FAN_HIGH,
@@ -23,6 +21,7 @@ from homeassistant.const import PRECISION_TENTHS, PRECISION_WHOLE, UnitOfTempera
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+import voluptuous as vol
 
 from . import InfinitudeDataUpdateCoordinator, InfinitudeEntity
 from .const import DOMAIN, PRESET_HOLD, PRESET_HOLD_UNTIL, PRESET_SCHEDULE, PRESET_WAKE
@@ -85,6 +84,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     _attr_temperature_step = PRECISION_WHOLE
     _attr_name = "Thermostat"
     _attr_translation_key = "infinitude_beyond_translation"
+    _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(
         self,
