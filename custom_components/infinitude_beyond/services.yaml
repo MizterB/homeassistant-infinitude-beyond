@@ -4,7 +4,7 @@ set_hold_mode:
   description: Sets the Hold Mode and Activity for an Infinitude zone
   target:
     entity:
-      integration: infinitude
+      integration: infinitude_beyond
       domain: climate
   fields:
     mode:
