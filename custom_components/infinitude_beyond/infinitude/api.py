@@ -218,23 +218,32 @@ class Infinitude:
 
     async def _update_status(self, status) -> None:
         """Status update handler."""
-        changes = self._compare_data(self._status, status)
-        if changes:
-            _LOGGER.debug("Status changed: %s", changes)
+        try:
+            changes = self._compare_data(self._status, status)
+            if changes:
+                _LOGGER.debug("Status changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing status changes: %s", e)
         self._status = status
 
     async def _update_config(self, config) -> None:
         """Config update handler."""
-        changes = self._compare_data(self._config, config)
-        if changes:
-            _LOGGER.debug("Config changed: %s", changes)
+        try:
+            changes = self._compare_data(self._config, config)
+            if changes:
+                _LOGGER.debug("Config changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing config changes: %s", e)
         self._config = config
 
     async def _update_energy(self, energy) -> None:
         """Energy update handler."""
-        changes = self._compare_data(self._energy, energy)
-        if changes:
-            _LOGGER.debug("Energy changed: %s", changes)
+        try:
+            changes = self._compare_data(self._energy, energy)
+            if changes:
+                _LOGGER.debug("Energy changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing energy changes: %s", e)
         self._energy = energy
 
 
