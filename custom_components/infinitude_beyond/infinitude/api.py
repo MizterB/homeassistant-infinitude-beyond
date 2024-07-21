@@ -189,7 +189,7 @@ class Infinitude:
                 self.port,
                 CONNECT_TIMEOUT,
             )
-            raise ConnectionError(e)
+            raise ConnectionError from e
 
         self.system = InfinitudeSystem(self)
         self.zones = {}
@@ -211,7 +211,7 @@ class Infinitude:
                 await self._update_energy(energy)
         except asyncio.TimeoutError as e:
             _LOGGER.error("Update timed out after %s seconds", UPDATE_TIMEOUT)
-            raise TimeoutError(e)
+            raise TimeoutError from e
 
         for zone in self.zones.values():
             zone._update_activities()
@@ -379,7 +379,7 @@ class InfinitudeSystem:
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
 
-        endpoint = f"/api/config"
+        endpoint = "/api/config"
         data = {"mode": f"{hvac_mode.value}"}
         await self._infinitude._post(endpoint, data)
 
@@ -412,7 +412,7 @@ class InfinitudeSystem:
 
     @property
     def ventilator_level(self) -> int | None:
-        """ventilator pre-filter level."""
+        """Ventilator pre-filter level."""
         val = self._status.get("ventlvl")
         if not val:
             return None
@@ -628,17 +628,6 @@ class InfinitudeZone:
         if action is None:
             _LOGGER.warning("'%s' is an unknown HVACAction", val)
         return action
-
-    @property
-    def fan_mode(self) -> FanMode | None:
-        """Fan mode."""
-        val = self._status.get("fan")
-        if not val:
-            return None
-        fan = next((f for f in FanMode if f.value == val), None)
-        if fan is None:
-            _LOGGER.warning("'%s' is an unknown FanState", val)
-        return fan
 
     @property
     def hold_state(self) -> HoldState | None:
