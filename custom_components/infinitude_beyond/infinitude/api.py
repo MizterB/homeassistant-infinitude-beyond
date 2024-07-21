@@ -819,8 +819,13 @@ class InfinitudeZone:
         # Update the 'manual' activity with the updated temperatures
         # Use dedicated API endpoint for activity config
         # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        # Include the current fan mode, so we don't restore the fan mode from the previous manual activity
         endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
-        data = {"htsp": f"{heat:.1f}", "clsp": f"{cool:.1f}"}
+        data = {
+            "htsp": f"{heat:.1f}",
+            "clsp": f"{cool:.1f}",
+            "fan": self.fan_mode.value,
+        }
         await self._infinitude._post(endpoint, data)
 
         # Hold on the updated 'manual' activity until the next schedule change
@@ -833,8 +838,13 @@ class InfinitudeZone:
         # Update the 'manual' activity with the updated fan mode
         # Use dedicated API endpoint for activity config
         # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        # Include the current target target temperatures, so we don't restore ones from the previous manual activity
         endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
-        data = {"fan": f"{fan_mode.value}"}
+        data = {
+            "fan": f"{fan_mode.value}",
+            "htsp": f"{self.temperature_heat:.1f}",
+            "clsp": f"{self.temperature_cool:.1f}",
+        }
         await self._infinitude._post(endpoint, data)
 
         # Hold on the updated 'manual' activity until the next schedule change
