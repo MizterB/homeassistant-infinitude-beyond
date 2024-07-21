@@ -314,7 +314,7 @@ class InfinitudeSystem:
             return None
         unit = next((u for u in TemperatureUnit if u.value == val), None)
         if unit is None:
-            _LOGGER.warning("'%s' is an unknown TemperatureUnit", unit)
+            _LOGGER.warning("'%s' is an unknown TemperatureUnit", val)
         return unit
 
     @property
@@ -373,7 +373,7 @@ class InfinitudeSystem:
             return None
         mode = next((m for m in HVACMode if m.value == val), None)
         if mode is None:
-            _LOGGER.warn("'%s' is an unknown HVACMode", mode)
+            _LOGGER.warning("'%s' is an unknown HVACMode", val)
         return mode
 
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
@@ -399,7 +399,7 @@ class InfinitudeSystem:
             return None
         state = next((s for s in HumidifierState if s.value == val), None)
         if state is None:
-            _LOGGER.warn("'%s' is an unknown HumidifierState", state)
+            _LOGGER.warning("'%s' is an unknown HumidifierState", val)
         return state
 
     @property
@@ -610,7 +610,7 @@ class InfinitudeZone:
             return None
         mode = next((m for m in FanMode if m.value == val), None)
         if mode is None:
-            _LOGGER.warn("'%s' is an unknown FanMode", mode)
+            _LOGGER.warning("'%s' is an unknown FanMode", val)
         return mode
 
     @property
@@ -626,7 +626,7 @@ class InfinitudeZone:
             return None
         action = next((a for a in HVACAction if a.value == val), None)
         if action is None:
-            _LOGGER.warn("'%s' is an unknown HVACAction", action)
+            _LOGGER.warning("'%s' is an unknown HVACAction", val)
         return action
 
     @property
@@ -637,7 +637,7 @@ class InfinitudeZone:
             return None
         fan = next((f for f in FanMode if f.value == val), None)
         if fan is None:
-            _LOGGER.warn("'%s' is an unknown FanState", fan)
+            _LOGGER.warning("'%s' is an unknown FanState", val)
         return fan
 
     @property
@@ -648,7 +648,7 @@ class InfinitudeZone:
             return None
         hold = next((h for h in HoldState if h.value == val), None)
         if hold is None:
-            _LOGGER.warn("'%s' is an unknown HoldState", hold)
+            _LOGGER.warning("'%s' is an unknown HoldState", hold)
         return hold
 
     @property
@@ -659,7 +659,7 @@ class InfinitudeZone:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Activity", val)
         return activity
 
     @property
@@ -700,7 +700,7 @@ class InfinitudeZone:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Activity", val)
         return activity
 
     @property
@@ -710,7 +710,9 @@ class InfinitudeZone:
             (a for a in Activity if a.value == self._activity_scheduled), None
         )
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning(
+                "'%s' is an unknown Sechduled Activity", self._activity_scheduled
+            )
         return activity
 
     @property
@@ -723,7 +725,7 @@ class InfinitudeZone:
         """Next scheduled activity."""
         activity = next((a for a in Activity if a.value == self._activity_next), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Next Activity", self._activity_next)
         return activity
 
     @property
@@ -739,7 +741,7 @@ class InfinitudeZone:
             return None
         occupancy = next((o for o in Occupancy if o.value == val), None)
         if occupancy is None:
-            _LOGGER.warn("'%s' is an unknown Occupancy", occupancy)
+            _LOGGER.warning("'%s' is an unknown Occupancy", val)
         return occupancy
 
     async def set_hold_mode(
