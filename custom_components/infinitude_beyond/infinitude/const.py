@@ -57,6 +57,8 @@ class HVACAction(Enum):
 
     ACTIVE_HEAT = "active_heat"
     ACTIVE_COOL = "active_cool"
+    PREP_COOL = "prep_cool"
+    PREP_HEAT = "prep_heat"  # Not confirmed as valid value
     IDLE = "idle"
 
 

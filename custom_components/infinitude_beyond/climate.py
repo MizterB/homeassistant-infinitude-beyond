@@ -124,9 +124,15 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     def target_temperature(self) -> float:
         """Return the target temperature."""
         if self.zone.hvac_mode == InfHVACMode.AUTO:
-            if self.zone.hvac_action == InfHVACAction.ACTIVE_HEAT:
+            if self.zone.hvac_action in [
+                InfHVACAction.ACTIVE_HEAT,
+                InfHVACAction.PREP_HEAT,
+            ]:
                 return self.setpoint_heat
-            elif self.zone.hvac_action == InfHVACAction.ACTIVE_COOL:
+            elif self.zone.hvac_action in [
+                InfHVACAction.ACTIVE_COOL,
+                InfHVACAction.PREP_COOL,
+            ]:
                 return self.setpoint_cool
             else:
                 return self.zone.temperature_current
@@ -175,9 +181,16 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
             return HVACAction.IDLE
         elif self.zone.hvac_action == InfHVACAction.ACTIVE_HEAT:
             return HVACAction.HEATING
+        elif self.zone.hvac_action == InfHVACAction.PREP_HEAT:
+            return HVACAction.PREHEATING
         elif self.zone.hvac_action == InfHVACAction.ACTIVE_COOL:
             return HVACAction.COOLING
-        return HVACAction.IDLE
+        elif self.zone.hvac_action == InfHVACAction.PREP_COOL:
+            return (
+                HVACAction.COOLING
+            )  # HVACAction.PRECOOLING not defined as of HA 2024.7
+        else:
+            return HVACAction.IDLE
 
     @property
     def hvac_modes(self):
