@@ -508,36 +508,43 @@ class InfinitudeZone:
         activity_scheduled_start = None
         activity_next = None
         activity_next_start = None
-        while activity_next is None:
-            day_name = dt.strftime("%A")
-            program = next(
-                day for day in self._config["program"]["day"] if day["id"] == day_name
-            )
-            for period in program["period"]:
-                if period["enabled"] == "off":
-                    continue
-                period_hh, period_mm = period["time"].split(":")
-                period_dt = datetime(
+        try:
+            while activity_next is None:
+                day_name = dt.strftime("%A")
+                program = next(
+                    day
+                    for day in self._config["program"]["day"]
+                    if day["id"] == day_name
+                )
+                for period in program["period"]:
+                    if period["enabled"] == "off":
+                        continue
+                    period_hh, period_mm = period["time"].split(":")
+                    period_dt = datetime(
+                        year=dt.year,
+                        month=dt.month,
+                        day=dt.day,
+                        hour=int(period_hh),
+                        minute=int(period_mm),
+                        tzinfo=self._infinitude.system.local_timezone,
+                    )
+                    if period_dt < dt:
+                        activity_scheduled = period["activity"]
+                        activity_scheduled_start = period_dt
+                    if period_dt >= dt:
+                        activity_next = period["activity"]
+                        activity_next_start = period_dt
+                        break
+                dt = datetime(
                     year=dt.year,
                     month=dt.month,
                     day=dt.day,
-                    hour=int(period_hh),
-                    minute=int(period_mm),
                     tzinfo=self._infinitude.system.local_timezone,
-                )
-                if period_dt < dt:
-                    activity_scheduled = period["activity"]
-                    activity_scheduled_start = period_dt
-                if period_dt >= dt:
-                    activity_next = period["activity"]
-                    activity_next_start = period_dt
-                    break
-            dt = datetime(
-                year=dt.year,
-                month=dt.month,
-                day=dt.day,
-                tzinfo=self._infinitude.system.local_timezone,
-            ) + timedelta(days=1)
+                ) + timedelta(days=1)
+        except Exception as e:
+            _LOGGER.debug(
+                "Error updating activities: %s\nProgram config is %s", e, program
+            )
 
         self._activity_scheduled = activity_scheduled
         self._activity_scheduled_start = activity_scheduled_start
