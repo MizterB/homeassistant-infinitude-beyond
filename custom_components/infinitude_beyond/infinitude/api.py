@@ -189,7 +189,7 @@ class Infinitude:
                 self.port,
                 CONNECT_TIMEOUT,
             )
-            raise ConnectionError(e)
+            raise ConnectionError from e
 
         self.system = InfinitudeSystem(self)
         self.zones = {}
@@ -211,30 +211,39 @@ class Infinitude:
                 await self._update_energy(energy)
         except asyncio.TimeoutError as e:
             _LOGGER.error("Update timed out after %s seconds", UPDATE_TIMEOUT)
-            raise TimeoutError(e)
+            raise TimeoutError from e
 
         for zone in self.zones.values():
             zone._update_activities()
 
     async def _update_status(self, status) -> None:
         """Status update handler."""
-        changes = self._compare_data(self._status, status)
-        if changes:
-            _LOGGER.debug("Status changed: %s", changes)
+        try:
+            changes = self._compare_data(self._status, status)
+            if changes:
+                _LOGGER.debug("Status changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing status changes: %s", e)
         self._status = status
 
     async def _update_config(self, config) -> None:
         """Config update handler."""
-        changes = self._compare_data(self._config, config)
-        if changes:
-            _LOGGER.debug("Config changed: %s", changes)
+        try:
+            changes = self._compare_data(self._config, config)
+            if changes:
+                _LOGGER.debug("Config changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing config changes: %s", e)
         self._config = config
 
     async def _update_energy(self, energy) -> None:
         """Energy update handler."""
-        changes = self._compare_data(self._energy, energy)
-        if changes:
-            _LOGGER.debug("Energy changed: %s", changes)
+        try:
+            changes = self._compare_data(self._energy, energy)
+            if changes:
+                _LOGGER.debug("Energy changed: %s", changes)
+        except Exception as e:
+            _LOGGER.debug("Exception while comparing energy changes: %s", e)
         self._energy = energy
 
 
@@ -305,7 +314,7 @@ class InfinitudeSystem:
             return None
         unit = next((u for u in TemperatureUnit if u.value == val), None)
         if unit is None:
-            _LOGGER.warning("'%s' is an unknown TemperatureUnit", unit)
+            _LOGGER.warning("'%s' is an unknown TemperatureUnit", val)
         return unit
 
     @property
@@ -364,13 +373,13 @@ class InfinitudeSystem:
             return None
         mode = next((m for m in HVACMode if m.value == val), None)
         if mode is None:
-            _LOGGER.warn("'%s' is an unknown HVACMode", mode)
+            _LOGGER.warning("'%s' is an unknown HVACMode", val)
         return mode
 
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
 
-        endpoint = f"/api/config"
+        endpoint = "/api/config"
         data = {"mode": f"{hvac_mode.value}"}
         await self._infinitude._post(endpoint, data)
 
@@ -390,7 +399,7 @@ class InfinitudeSystem:
             return None
         state = next((s for s in HumidifierState if s.value == val), None)
         if state is None:
-            _LOGGER.warn("'%s' is an unknown HumidifierState", state)
+            _LOGGER.warning("'%s' is an unknown HumidifierState", val)
         return state
 
     @property
@@ -403,7 +412,7 @@ class InfinitudeSystem:
 
     @property
     def ventilator_level(self) -> int | None:
-        """ventilator pre-filter level."""
+        """Ventilator pre-filter level."""
         val = self._status.get("ventlvl")
         if not val:
             return None
@@ -499,36 +508,43 @@ class InfinitudeZone:
         activity_scheduled_start = None
         activity_next = None
         activity_next_start = None
-        while activity_next is None:
-            day_name = dt.strftime("%A")
-            program = next(
-                day for day in self._config["program"]["day"] if day["id"] == day_name
-            )
-            for period in program["period"]:
-                if period["enabled"] == "off":
-                    continue
-                period_hh, period_mm = period["time"].split(":")
-                period_dt = datetime(
+        try:
+            while activity_next is None:
+                day_name = dt.strftime("%A")
+                program = next(
+                    day
+                    for day in self._config["program"]["day"]
+                    if day["id"] == day_name
+                )
+                for period in program["period"]:
+                    if period["enabled"] == "off":
+                        continue
+                    period_hh, period_mm = period["time"].split(":")
+                    period_dt = datetime(
+                        year=dt.year,
+                        month=dt.month,
+                        day=dt.day,
+                        hour=int(period_hh),
+                        minute=int(period_mm),
+                        tzinfo=self._infinitude.system.local_timezone,
+                    )
+                    if period_dt < dt:
+                        activity_scheduled = period["activity"]
+                        activity_scheduled_start = period_dt
+                    if period_dt >= dt:
+                        activity_next = period["activity"]
+                        activity_next_start = period_dt
+                        break
+                dt = datetime(
                     year=dt.year,
                     month=dt.month,
                     day=dt.day,
-                    hour=int(period_hh),
-                    minute=int(period_mm),
                     tzinfo=self._infinitude.system.local_timezone,
-                )
-                if period_dt < dt:
-                    activity_scheduled = period["activity"]
-                    activity_scheduled_start = period_dt
-                if period_dt >= dt:
-                    activity_next = period["activity"]
-                    activity_next_start = period_dt
-                    break
-            dt = datetime(
-                year=dt.year,
-                month=dt.month,
-                day=dt.day,
-                tzinfo=self._infinitude.system.local_timezone,
-            ) + timedelta(days=1)
+                ) + timedelta(days=1)
+        except Exception as e:
+            _LOGGER.debug(
+                "Error updating activities: %s\nProgram config is %s", e, program
+            )
 
         self._activity_scheduled = activity_scheduled
         self._activity_scheduled_start = activity_scheduled_start
@@ -601,7 +617,7 @@ class InfinitudeZone:
             return None
         mode = next((m for m in FanMode if m.value == val), None)
         if mode is None:
-            _LOGGER.warn("'%s' is an unknown FanMode", mode)
+            _LOGGER.warning("'%s' is an unknown FanMode", val)
         return mode
 
     @property
@@ -617,19 +633,8 @@ class InfinitudeZone:
             return None
         action = next((a for a in HVACAction if a.value == val), None)
         if action is None:
-            _LOGGER.warn("'%s' is an unknown HVACAction", action)
+            _LOGGER.warning("'%s' is an unknown HVACAction", val)
         return action
-
-    @property
-    def fan_mode(self) -> FanMode | None:
-        """Fan mode."""
-        val = self._status.get("fan")
-        if not val:
-            return None
-        fan = next((f for f in FanMode if f.value == val), None)
-        if fan is None:
-            _LOGGER.warn("'%s' is an unknown FanState", fan)
-        return fan
 
     @property
     def hold_state(self) -> HoldState | None:
@@ -639,7 +644,7 @@ class InfinitudeZone:
             return None
         hold = next((h for h in HoldState if h.value == val), None)
         if hold is None:
-            _LOGGER.warn("'%s' is an unknown HoldState", hold)
+            _LOGGER.warning("'%s' is an unknown HoldState", hold)
         return hold
 
     @property
@@ -650,7 +655,7 @@ class InfinitudeZone:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Activity", val)
         return activity
 
     @property
@@ -691,7 +696,7 @@ class InfinitudeZone:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Activity", val)
         return activity
 
     @property
@@ -701,7 +706,9 @@ class InfinitudeZone:
             (a for a in Activity if a.value == self._activity_scheduled), None
         )
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning(
+                "'%s' is an unknown Sechduled Activity", self._activity_scheduled
+            )
         return activity
 
     @property
@@ -714,7 +721,7 @@ class InfinitudeZone:
         """Next scheduled activity."""
         activity = next((a for a in Activity if a.value == self._activity_next), None)
         if activity is None:
-            _LOGGER.warn("'%s' is an unknown Activity", activity)
+            _LOGGER.warning("'%s' is an unknown Next Activity", self._activity_next)
         return activity
 
     @property
@@ -730,7 +737,7 @@ class InfinitudeZone:
             return None
         occupancy = next((o for o in Occupancy if o.value == val), None)
         if occupancy is None:
-            _LOGGER.warn("'%s' is an unknown Occupancy", occupancy)
+            _LOGGER.warning("'%s' is an unknown Occupancy", val)
         return occupancy
 
     async def set_hold_mode(
@@ -819,8 +826,13 @@ class InfinitudeZone:
         # Update the 'manual' activity with the updated temperatures
         # Use dedicated API endpoint for activity config
         # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        # Include the current fan mode, so we don't restore the fan mode from the previous manual activity
         endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
-        data = {"htsp": f"{heat:.1f}", "clsp": f"{cool:.1f}"}
+        data = {
+            "htsp": f"{heat:.1f}",
+            "clsp": f"{cool:.1f}",
+            "fan": self.fan_mode.value,
+        }
         await self._infinitude._post(endpoint, data)
 
         # Hold on the updated 'manual' activity until the next schedule change
@@ -833,8 +845,13 @@ class InfinitudeZone:
         # Update the 'manual' activity with the updated fan mode
         # Use dedicated API endpoint for activity config
         # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L253
+        # Include the current target target temperatures, so we don't restore ones from the previous manual activity
         endpoint = f"/api/{self.id}/activity/{Activity.MANUAL.value}"
-        data = {"fan": f"{fan_mode.value}"}
+        data = {
+            "fan": f"{fan_mode.value}",
+            "htsp": f"{self.temperature_heat:.1f}",
+            "clsp": f"{self.temperature_cool:.1f}",
+        }
         await self._infinitude._post(endpoint, data)
 
         # Hold on the updated 'manual' activity until the next schedule change
