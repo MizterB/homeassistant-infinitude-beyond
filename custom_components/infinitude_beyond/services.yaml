@@ -12,9 +12,9 @@ set_hold_mode:
         select:
           options:
             - "hold"
-            - "hold_until"
+            - "hold until"
             - "per schedule"
-      description: "Name of the hold mode to apply.  If not provided, defaults to 'hold until'.  NOTE: 'hold until' expects an additional 'until' parameter to be provided."
+      description: "Name of the hold mode to apply.  If not provided, defaults to 'hold until'"
       example: "'hold', 'hold until', 'per schedule'"
     until:
       selector:
