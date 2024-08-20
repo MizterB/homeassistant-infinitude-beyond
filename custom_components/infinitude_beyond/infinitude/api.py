@@ -202,7 +202,6 @@ class Infinitude:
         """Update variable data from Infinitude."""
         try:
             async with asyncio.timeout(UPDATE_TIMEOUT):
-                _LOGGER.debug("Updating from Infinitude")
                 status, config, energy = await asyncio.gather(
                     self._fetch_status(), self._fetch_config(), self._fetch_energy()
                 )
@@ -214,14 +213,17 @@ class Infinitude:
             raise TimeoutError from e
 
         for zone in self.zones.values():
-            zone._update_activities()
+            if zone.enabled:
+                zone._update_activities()
 
     async def _update_status(self, status) -> None:
         """Status update handler."""
         try:
             changes = self._compare_data(self._status, status)
-            if changes:
-                _LOGGER.debug("Status changed: %s", changes)
+            # Filter out changes that are only related to localTime
+            significant_changes = {k: v for k, v in changes.items() if k != "localTime"}
+            if significant_changes:
+                _LOGGER.debug("Status changed: %s", significant_changes)
         except Exception as e:
             _LOGGER.debug("Exception while comparing status changes: %s", e)
         self._status = status
@@ -338,31 +340,47 @@ class InfinitudeSystem:
             )
             localtime_naive_dt = datetime.now()
         # Add TZ data
-        localtime_dt = localtime_naive_dt.replace(tzinfo=self.local_timezone)
-        return localtime_dt
+        return localtime_naive_dt.replace(tzinfo=self.local_timezone)
 
     @property
     def local_timezone(self) -> timezone:
         """Gets the time zone.
 
         Returns the value provided by Infinitude's localTime if provided.
-        Otherwise, returns this host system's timezone
+        Otherwise, returns this host system's timezone.
         """
         localtime_str = self._status.get("localTime")
-        # localTime string does not always contain a time zone
-        # Use if provided, otherwise assume the system TZ
+
+        # If localTime is not provided, fallback to system timezone
+        if localtime_str is None:
+            return datetime.now().astimezone().tzinfo
+
+        # Match the datetime string with optional timezone offset
         matches = match(
             r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})([+-]\d{2}:\d{2})?$",
             localtime_str,
         )
-        # Parse the TZ offset if found
-        if matches.lastindex == 2:
+        if matches and matches.lastindex == 2:
             offset_str = matches.group(2)
             hours, minutes = map(int, offset_str.split(":"))
-            offset = timedelta(hours=hours, minutes=minutes)
+
+            # Adjust for negative offsets
+            if hours < 0:
+                minutes = -minutes
+
+            # Sometimes there is timezone variability of a minute or two
+            # ...so round to the nearest 5 minutes
+            total_minutes = hours * 60 + minutes
+            rounded_minutes = 5 * round(total_minutes / 5)
+            rounded_hours, rounded_minutes = divmod(rounded_minutes, 60)
+
+            # Generate the timezone object
+            offset = timedelta(hours=rounded_hours, minutes=rounded_minutes)
             tz = timezone(offset)
         else:
+            # If no timezone offset found, fallback to system timezone
             tz = datetime.now().astimezone().tzinfo
+
         return tz
 
     @property
