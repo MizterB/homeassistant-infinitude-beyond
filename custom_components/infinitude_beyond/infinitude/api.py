@@ -714,7 +714,7 @@ class InfinitudeZone:
             return None
         activity = next((a for a in Activity if a.value == val), None)
         if activity is None:
-            _LOGGER.warning("'%s' is an unknown Activity", val)
+            _LOGGER.debug("'%s' is an unknown Activity", val)
         return activity
 
     @property
@@ -724,8 +724,8 @@ class InfinitudeZone:
             (a for a in Activity if a.value == self._activity_scheduled), None
         )
         if activity is None:
-            _LOGGER.warning(
-                "'%s' is an unknown Sechduled Activity", self._activity_scheduled
+            _LOGGER.debug(
+                "'%s' is an unknown Scheduled Activity", self._activity_scheduled
             )
         return activity
 
