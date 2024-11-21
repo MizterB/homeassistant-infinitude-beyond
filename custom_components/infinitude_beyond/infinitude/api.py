@@ -453,6 +453,17 @@ class InfinitudeSystem:
         return int(val)
 
     @property
+    def heatpump_stage(self) -> int | None:
+        """Heat pump stage."""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        opstat = odu.get("opstat")
+        if not opstat:
+            return None
+        return int(opstat[-1])
+
+    @property
     def airflow_cfm(self) -> float | None:
         """System airflow in CFM."""
         idu = self._status.get("idu")
