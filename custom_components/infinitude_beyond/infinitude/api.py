@@ -458,15 +458,14 @@ class InfinitudeSystem:
         odu = self._status.get("odu")
         if not odu:
             return None
-        if "proteus" not in odu.get("type"):
+        if "proteus" not in odu.get("type"): # Proteus is the type of variable speed compressor
             return None
         opstat = odu.get("opstat")
         if not opstat:
             return None
-        print(opstat)
-        if opstat == "off":
+        if opstat == "off": # Will return off instead of stage 0
             return 0
-        if opstat == "dehumidify":
+        if opstat == "dehumidify": # Will return dehumidify, means stage 1
             return 1
         if opstat[-1].isdigit():
             return int(opstat[-1])
