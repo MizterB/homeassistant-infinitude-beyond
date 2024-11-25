@@ -458,10 +458,19 @@ class InfinitudeSystem:
         odu = self._status.get("odu")
         if not odu:
             return None
+        if "proteus" not in odu.get("type"):
+            return None
         opstat = odu.get("opstat")
         if not opstat:
             return None
-        return int(opstat[-1])
+        print(opstat)
+        if opstat == "off":
+            return 0
+        if opstat == "dehumidify":
+            return 1
+        if opstat[-1].isdigit():
+            return int(opstat[-1])
+        return None
 
     @property
     def airflow_cfm(self) -> float | None:
