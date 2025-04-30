@@ -527,7 +527,7 @@ class InfinitudeZone:
         activity_next = None
         activity_next_start = None
         try:
-            while activity_next is None:
+            for i in range(7):
                 day_name = dt.strftime("%A")
                 program = next(
                     day
