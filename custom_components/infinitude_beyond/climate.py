@@ -277,15 +277,19 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     @property
     def preset_mode(self):
         """Return current preset mode."""
-        # If hold is off, preset is the currently scheduled activity
+        # If hold is off, preset should reflect the effective current activity when available.
+        # This avoids showing "Scheduled activity" (graph) or an out-of-date scheduled activity
+        # when Infinitude reports a different currentActivity.
         if self.zone.hold_mode == InfHoldMode.OFF:
-            if self.zone.activity_scheduled == InfActivity.HOME:
+            activity = self.zone.activity_current or self.zone.activity_scheduled
+
+            if activity == InfActivity.HOME:
                 return PRESET_HOME
-            elif self.zone.activity_scheduled == InfActivity.AWAY:
+            elif activity == InfActivity.AWAY:
                 return PRESET_AWAY
-            elif self.zone.activity_scheduled == InfActivity.SLEEP:
+            elif activity == InfActivity.SLEEP:
                 return PRESET_SLEEP
-            elif self.zone.activity_scheduled == InfActivity.WAKE:
+            elif activity == InfActivity.WAKE:
                 return PRESET_WAKE
             else:
                 return PRESET_SCHEDULE
