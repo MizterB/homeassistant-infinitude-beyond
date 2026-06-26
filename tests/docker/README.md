@@ -9,27 +9,31 @@ data (never a real home).
 ```bash
 cd tests/docker
 docker compose up -d            # boots Infinitude on http://localhost:13000
-./seed.sh                       # loads public v1.7 sample config (systems17.raw)
+./seed.sh                       # loads public sample config + status
 
 curl http://localhost:13000/api/config/   # -> real v1.7 config JSON
+curl http://localhost:13000/api/status/   # -> live status snapshot JSON
 docker compose down
 ```
 
-## What works, and the boundary
+## How it works
 
-- **Boots hardware-free** — `EMULATE_SAM=1`, no `SERIAL_TTY`. Verified.
-- **`/api/config/` seeds from public data** — `seed.sh` POSTs the maintainer's
-  `t/systems17.raw` with `Host: infinitude` (Infinitude only ingests requests
-  whose Host matches `bryant|carrier|ioncomfort|infinitude`). This yields a real
-  v1.7 config: zone programs, activities, `hold`, `otmr`.
-- **`/api/status/` stays empty** — live status (current temperatures,
-  `currentActivity`, hold `otmr`) is a *separate* push from the thermostat that
-  the public config sample does not contain. So this bed is not yet a full
-  HA→Infinitude loop, and the synthetic fixtures in `../fixtures/` remain the
-  source of truth for status-dependent tests.
+- **Boots hardware-free** — `EMULATE_SAM=1`, no `SERIAL_TTY`.
+- **Seeds from public data, two pushes** — Infinitude only ingests requests
+  whose Host matches `bryant|carrier|ioncomfort|infinitude` (its
+  `before_dispatch` hook), so `seed.sh` sends `Host: infinitude`:
+  - config <- `t/systems17.raw` POSTed to `/systems/{serial}` → `/api/config/`
+    (zone programs, activities, `hold`, `otmr`)
+  - status <- `defs/status.xml` POSTed to `/systems/{serial}/status` →
+    `/api/status/` (`rt`, `currentActivity`, `oat`, ...)
 
-## Follow-ups
+Both samples are the maintainer's public fixtures — no real-home data.
 
-- Source or synthesize a public status document to push (enabling full e2e and
-  config-derived status fixtures).
-- Add a compose service + helper to point a devcontainer HA instance at this bed.
+## Notes
+
+- The two public samples don't perfectly agree on which zones are enabled
+  (config enables zones 1–2; the status sample enables 1, 3–8). Fine for a
+  smoke/e2e target; the synthetic fixtures in `../fixtures/` remain the
+  controlled inputs for assertion-level tests.
+- Possible follow-up: point a devcontainer HA instance at this bed for a fully
+  hardware-free HA→Infinitude loop.
