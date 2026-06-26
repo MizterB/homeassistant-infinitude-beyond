@@ -12,8 +12,9 @@ Tests are grouped into:
 
 from __future__ import annotations
 
-import threading
+from datetime import timedelta
 
+import infinitude.api as api_module
 import pytest
 from infinitude.const import (
     FanMode,
@@ -22,6 +23,24 @@ from infinitude.const import (
     HVACMode,
     TemperatureUnit,
 )
+
+
+@pytest.fixture(autouse=True)
+def _allow_local_sockets():
+    """Layer 1 uses a real local aiohttp server.
+
+    When pytest-socket is present (it ships with pytest-homeassistant-custom-
+    component and blocks sockets session-wide), re-enable them for these tests.
+    No-op in the HA-free environment where pytest-socket isn't installed.
+    """
+    try:
+        import pytest_socket
+    except ImportError:
+        yield
+        return
+    pytest_socket.enable_socket()
+    yield
+
 
 # --------------------------------------------------------------------------- #
 # Happy-path coverage
@@ -158,13 +177,20 @@ async def test_hold_until_prefers_config_otmr(infinitude):
     assert zone.hold_mode is HoldMode.UNTIL  # currently INDEFINITE -> the bug
 
 
-@pytest.mark.timeout(5)
+class _LoopGuard(BaseException):
+    """Raised to break out of an unbounded day-walk.
+
+    Subclasses BaseException (not Exception) so _update_activities's broad
+    ``except Exception`` cannot swallow it -- it propagates out to the test.
+    """
+
+
 @pytest.mark.xfail(
     strict=True,
     reason="#42: _update_activities walks days forever when no schedule is "
     "active. Drop xfail once the day-walk is bounded to 7 days.",
 )
-async def test_update_activities_terminates_without_schedule(infinitude):
+async def test_update_activities_terminates_without_schedule(infinitude, monkeypatch):
     # Swap zone 1 to a fully-disabled schedule (simplified, as connect() stores it).
     from tests.conftest import load_fixture
 
@@ -172,13 +198,23 @@ async def test_update_activities_terminates_without_schedule(infinitude):
     infinitude._config = no_sched
     zone = infinitude.zones["1"]
 
-    done = threading.Event()
+    # _update_activities advances one day per loop via `timedelta(days=1)`. Trip a
+    # guard once it walks past two weeks -- a bounded (<=7-day) implementation
+    # never gets there; the current unbounded loop does, almost immediately.
+    calls = {"n": 0}
 
-    def run():
+    def counting_timedelta(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] > 14:
+            raise _LoopGuard
+        return timedelta(*args, **kwargs)
+
+    monkeypatch.setattr(api_module, "timedelta", counting_timedelta)
+
+    walked_unbounded = False
+    try:
         zone._update_activities()
-        done.set()
+    except _LoopGuard:
+        walked_unbounded = True
 
-    worker = threading.Thread(target=run, daemon=True)
-    worker.start()
-    worker.join(timeout=3)
-    assert done.is_set(), "_update_activities did not terminate (infinite day-walk)"
+    assert not walked_unbounded, "_update_activities walked past 14 days (unbounded)"

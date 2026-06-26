@@ -6,19 +6,26 @@
   `infinitude` client with **no Home Assistant dependency**. Fixtures are served
   by a real in-process `aiohttp` test server (`conftest.py`), so the suite is not
   coupled to aiohttp's internal mocking API.
-- **Layer 2 — Home Assistant integration (planned).** Will use
+- **Layer 2 — Home Assistant integration (`ha/`).** Uses
   `pytest-homeassistant-custom-component` to drive the config flow and entity
-  platforms. Uncomment the dependency in `requirements.test.txt` to enable.
+  platforms. It is **skipped automatically** when Home Assistant isn't installed
+  (so Layer 1 can run in a minimal env) via `pytest.importorskip` and
+  `collect_ignore_glob` in the parent `conftest.py`.
 
 ## Running
 
 ```bash
-scripts/setup     # install test deps
-scripts/test      # run pytest
+scripts/setup     # install Layer 1 test deps
+scripts/test      # run pytest (Layer 2 is skipped unless HA is installed)
 scripts/lint      # ruff check tests/
+
+# To also run Layer 2 locally:
+pip install pytest-homeassistant-custom-component
+pytest
 ```
 
 Requires Python 3.12+ (the client uses 3.10+ syntax and `asyncio.timeout`).
+Layer 2 follows `pytest-homeassistant-custom-component`'s Python floor (3.13).
 
 ## Fixtures (`fixtures/`)
 

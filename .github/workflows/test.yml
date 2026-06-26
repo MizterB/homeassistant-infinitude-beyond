@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [main]
+    branches: [main, next]
   pull_request:
 
 jobs:
@@ -17,15 +17,14 @@ jobs:
       - run: python -m pip install ruff
       - run: ruff check tests/
 
-  test:
-    name: pytest (py${{ matrix.python-version }})
+  unit:
+    # Layer 1: the API client tests, with NO Home Assistant installed. This both
+    # exercises the client and guarantees it stays HA-free (tests/ha is skipped).
+    name: Layer 1 (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # Layer 1 tests are HA-free, so this matrix tracks Python versions.
-        # When Layer 2 (pytest-homeassistant-custom-component) is added, add an
-        # HA-version axis here (floor 2024.1.0 + latest).
         python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -33,4 +32,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -r requirements.test.txt
+      - run: python -m pytest
+
+  ha:
+    # Layer 2: Home Assistant integration tests. pytest-homeassistant-custom-
+    # component pins a recent HA, which requires Python 3.13.
+    name: Layer 2 (Home Assistant)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: |
+          python -m pip install -r requirements.test.txt
+          python -m pip install pytest-homeassistant-custom-component
       - run: python -m pytest

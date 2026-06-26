@@ -24,3 +24,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["B011"]
+# Layer 2 conftest must import Home Assistant AFTER pytest.importorskip(), so
+# imports can't be sorted to the top.
+"tests/ha/conftest.py" = ["E402", "I001"]

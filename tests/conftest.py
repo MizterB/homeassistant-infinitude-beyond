@@ -28,6 +28,13 @@ sys.path.insert(0, str(CLIENT_DIR))
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
+# Layer 2 (tests/ha/) requires Home Assistant. When it isn't installed (the
+# HA-free Layer 1 environment), skip collecting that subtree entirely.
+try:
+    import homeassistant  # noqa: F401
+except ImportError:
+    collect_ignore_glob = ["ha/*"]
+
 
 def load_fixture(name: str) -> dict:
     """Load a JSON fixture by filename."""
