@@ -8,7 +8,7 @@ pytest-timeout>=2.2
 
 # Layer 2 — Home Assistant integration tests.
 # Pin to match the integration's minimum supported HA (hacs.json: 2024.1.0) or later.
-# Uncomment to run the HA-backed tests; requires Python 3.12+.
+# Uncomment to run the HA-backed tests; requires Python 3.14+.
 # pytest-homeassistant-custom-component>=0.13.100
 
 # Linting

@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: python -m pip install ruff
       - run: ruff check tests/
 
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,15 +35,15 @@ jobs:
       - run: python -m pytest
 
   ha:
-    # Layer 2: Home Assistant integration tests. pytest-homeassistant-custom-
-    # component pins a recent HA, which requires Python 3.13.
+    # Layer 2: Home Assistant integration tests via pytest-homeassistant-custom-
+    # component (pulls a recent Home Assistant).
     name: Layer 2 (Home Assistant)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: |
           python -m pip install -r requirements.test.txt
           python -m pip install pytest-homeassistant-custom-component

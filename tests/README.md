@@ -24,8 +24,7 @@ pip install pytest-homeassistant-custom-component
 pytest
 ```
 
-Requires Python 3.12+ (the client uses 3.10+ syntax and `asyncio.timeout`).
-Layer 2 follows `pytest-homeassistant-custom-component`'s Python floor (3.13).
+Both layers target Python 3.14.
 
 ## Fixtures (`fixtures/`)
 
