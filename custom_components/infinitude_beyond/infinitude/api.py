@@ -1,10 +1,9 @@
 """Define a base client for interacting with Infinitude."""
 
 import asyncio
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import datetime, timedelta, timezone
 from re import match
-from typing import Optional
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
@@ -36,7 +35,7 @@ class Infinitude:
         port: int = 3000,
         ssl: bool = False,
         *,
-        session: Optional[ClientSession] = None,
+        session: ClientSession | None = None,
     ) -> None:
         """Initialize the Infinitude API."""
         self.host: str = host
@@ -182,7 +181,7 @@ class Infinitude:
                 self._energy = energy
                 self._profile = profile
 
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             _LOGGER.error(
                 "Failed to connect to Infinitude at %s:%s after %s seconds",
                 self.host,
@@ -208,7 +207,7 @@ class Infinitude:
                 await self._update_status(status)
                 await self._update_config(config)
                 await self._update_energy(energy)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             _LOGGER.error("Update timed out after %s seconds", UPDATE_TIMEOUT)
             raise TimeoutError from e
 

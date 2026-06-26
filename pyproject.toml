@@ -22,6 +22,11 @@ ignore = [
     "E501",  # line length handled by formatter
 ]
 
+[tool.ruff.lint.isort]
+# Keep aliased imports grouped in one statement (matches Home Assistant style)
+# instead of exploding `X as Y` onto separate import lines.
+combine-as-imports = true
+
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["B011"]
 # Layer 2 conftest must import Home Assistant AFTER pytest.importorskip(), so

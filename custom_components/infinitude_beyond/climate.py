@@ -1,10 +1,9 @@
 """Climate for Infinitude."""
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 import voluptuous as vol
-
 from homeassistant.components.climate import (
     FAN_AUTO,
     FAN_HIGH,
