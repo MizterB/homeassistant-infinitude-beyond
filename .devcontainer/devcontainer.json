@@ -1,0 +1,26 @@
+{
+  "name": "Infinitude Beyond",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13",
+  "postCreateCommand": "python3 -m pip install -r requirements.dev.txt",
+  "forwardPorts": [8123],
+  "portsAttributes": {
+    "8123": {
+      "label": "Home Assistant",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
+      }
+    }
+  }
+}

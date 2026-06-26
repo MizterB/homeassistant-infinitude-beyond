@@ -1,0 +1,391 @@
+{
+  "cfgem": [
+    "F"
+  ],
+  "cfgtype": [
+    "heatcool"
+  ],
+  "filtrlvl": [
+    "0"
+  ],
+  "humid": [
+    "off"
+  ],
+  "humlvl": [
+    "100"
+  ],
+  "idu": [
+    {
+      "cfm": [
+        "800"
+      ],
+      "opstat": [
+        "35"
+      ],
+      "type": [
+        "furnacemodulating"
+      ]
+    }
+  ],
+  "localTime": [
+    "2024-01-15T08:00:00-05:00"
+  ],
+  "mode": [
+    "heat"
+  ],
+  "oat": [
+    "34"
+  ],
+  "uvlvl": [
+    "100"
+  ],
+  "vacatrunning": [
+    "off"
+  ],
+  "ventlvl": [
+    "100"
+  ],
+  "version": "1.7",
+  "zones": [
+    {
+      "zone": [
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "home"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "on"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "1",
+          "name": [
+            "Living Room"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            "70.0"
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "on"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "2",
+          "name": [
+            "Bedroom"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            "68.0"
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "3",
+          "name": [
+            "Zone 3"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "4",
+          "name": [
+            "Zone 4"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "5",
+          "name": [
+            "Zone 5"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "6",
+          "name": [
+            "Zone 6"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "7",
+          "name": [
+            "Zone 7"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        },
+        {
+          "clsp": [
+            "75.0"
+          ],
+          "currentActivity": [
+            "sleep"
+          ],
+          "damperposition": [
+            "100"
+          ],
+          "enabled": [
+            "off"
+          ],
+          "fan": [
+            "off"
+          ],
+          "hold": [
+            "off"
+          ],
+          "htsp": [
+            "68.0"
+          ],
+          "id": "8",
+          "name": [
+            "Zone 8"
+          ],
+          "occupancy": [
+            "occupied"
+          ],
+          "otmr": [
+            {}
+          ],
+          "rh": [
+            "42"
+          ],
+          "rt": [
+            {}
+          ],
+          "zoneconditioning": [
+            "idle"
+          ]
+        }
+      ]
+    }
+  ]
+}

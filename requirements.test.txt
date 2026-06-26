@@ -1,0 +1,15 @@
+# Layer 1 — pure API-client unit tests (no Home Assistant required).
+# Fixtures are served by a real in-process aiohttp test server (no HTTP mocking
+# library, so the suite is not coupled to aiohttp's internal API).
+aiohttp>=3.9
+pytest>=8.0
+pytest-asyncio>=0.23
+pytest-timeout>=2.2
+
+# Layer 2 — Home Assistant integration tests.
+# Pin to match the integration's minimum supported HA (hacs.json: 2024.1.0) or later.
+# Uncomment to run the HA-backed tests; requires Python 3.12+.
+# pytest-homeassistant-custom-component>=0.13.100
+
+# Linting
+ruff>=0.4

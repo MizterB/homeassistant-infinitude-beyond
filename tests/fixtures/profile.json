@@ -1,0 +1,49 @@
+{
+  "system_profile": [
+    {
+      "brand": [
+        "Carrier"
+      ],
+      "firmware": [
+        "CESR000000-00.00"
+      ],
+      "idutype": [
+        "fancoil"
+      ],
+      "iduversion": [
+        "CESR000000-00"
+      ],
+      "indoorModel": [
+        "FE0ANB000"
+      ],
+      "indoorSerial": [
+        "0000A000000"
+      ],
+      "model": [
+        "SYSTXCCITC01-A"
+      ],
+      "odutype": [
+        "ac2stg"
+      ],
+      "oduversion": [
+        "CESR000000-00"
+      ],
+      "outdoorModel": [
+        "00ANB000A00000"
+      ],
+      "outdoorSerial": [
+        "0000E000000"
+      ],
+      "pin": [
+        "00000000"
+      ],
+      "routerMac": [
+        "000000000000"
+      ],
+      "serial": [
+        "0000W000000"
+      ],
+      "version": "1.7"
+    }
+  ]
+}

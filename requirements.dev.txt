@@ -1,0 +1,5 @@
+# Full dev environment for the devcontainer: a runnable Home Assistant plus the
+# test dependencies. Used by `scripts/setup` inside the devcontainer.
+homeassistant>=2024.1.0
+colorlog
+-r requirements.test.txt
