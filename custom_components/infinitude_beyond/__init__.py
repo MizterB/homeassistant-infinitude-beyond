@@ -6,8 +6,9 @@ from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -32,6 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = InfinitudeDataUpdateCoordinator(
         hass,
+        entry,
         entry.data[CONF_HOST],
         entry.data[CONF_PORT],
         entry.data[CONF_SSL],
@@ -42,9 +44,83 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Error connecting to Infinitude: %s", ex)
         raise ConfigEntryNotReady from ex
 
+    _async_migrate_to_entry_id(hass, entry)
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+def _rebase_id(old: str, base: str, markers: tuple[str, ...]) -> str | None:
+    """Replace the prefix before the earliest marker with ``base``.
+
+    Returns None when no marker is present or the id is already rebased.
+    """
+    best = None
+    for marker in markers:
+        idx = old.find(marker)
+        if idx != -1 and (best is None or idx < best):
+            best = idx
+    if best is None:
+        return None
+    new = f"{base}{old[best:]}"
+    return new if new != old else None
+
+
+def _is_none_prefixed(uid: str) -> bool:
+    return uid.startswith("None_")
+
+
+@callback
+def _async_migrate_to_entry_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Rebase entity and device ids onto the config entry id.
+
+    Preserves entity_id (and history). When an install already split, the
+    serial-based entry wins and the "None" duplicate is left in place. Runs
+    before platforms register so entities bind to the migrated rows.
+    """
+    base = entry.entry_id
+    ent_reg = er.async_get(hass)
+    entities = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+
+    taken = {e.unique_id for e in entities}
+    groups: dict[str, list[er.RegistryEntry]] = {}
+    for ent in entities:
+        target = _rebase_id(ent.unique_id, base, ("_zone_", "_system_"))
+        if target is not None:
+            groups.setdefault(target, []).append(ent)
+
+    for target, candidates in groups.items():
+        if target in taken:
+            continue
+        candidates.sort(key=lambda e: _is_none_prefixed(e.unique_id))
+        ent_reg.async_update_entity(candidates[0].entity_id, new_unique_id=target)
+        taken.add(target)
+
+    dev_reg = dr.async_get(hass)
+    devices = dr.async_entries_for_config_entry(dev_reg, entry.entry_id)
+    taken_idents = {
+        ident for d in devices for dom, ident in d.identifiers if dom == DOMAIN
+    }
+    devices.sort(
+        key=lambda d: any(
+            _is_none_prefixed(i) for dom, i in d.identifiers if dom == DOMAIN
+        )
+    )
+    for device in devices:
+        new_identifiers = set()
+        changed = False
+        for domain, ident in device.identifiers:
+            new_ident = ident
+            if domain == DOMAIN:
+                rebased = _rebase_id(ident, base, ("_zone_", "_system"))
+                if rebased is not None and rebased not in taken_idents:
+                    new_ident = rebased
+                    changed = True
+                    taken_idents.add(rebased)
+            new_identifiers.add((domain, new_ident))
+        if changed:
+            dev_reg.async_update_device(device.id, new_identifiers=new_identifiers)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -58,11 +134,19 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class InfinitudeDataUpdateCoordinator(DataUpdateCoordinator):
     """Data update coordinator for Infinitude."""
 
-    def __init__(self, hass: HomeAssistant, host: str, port: int, ssl: bool) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        host: str,
+        port: int,
+        ssl: bool,
+    ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=f"{host}:{port}",
             update_interval=timedelta(seconds=UPDATE_INTERVAL),
         )
@@ -103,11 +187,16 @@ class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):
         super().__init__(coordinator)
 
     @property
+    def _id_base(self) -> str:
+        """Stable identity prefix for entities and devices."""
+        return self.coordinator.config_entry.entry_id
+
+    @property
     def unique_id(self) -> str:
         """Return the unique id."""
         if self.zone:
-            return f"{self.system.serial}_zone_{self.zone.id}_{self.name}"
-        return f"{self.system.serial}_system_{self.name}"
+            return f"{self._id_base}_zone_{self.zone.id}_{self.name}"
+        return f"{self._id_base}_system_{self.name}"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -120,10 +209,10 @@ class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):
                 name = self.zone.name
             else:
                 name = f"Zone {self.zone.id}"
-            identifier = f"{self.infinitude.system.serial}_zone_{self.zone.id}"
+            identifier = f"{self._id_base}_zone_{self.zone.id}"
         else:
             name = "Infinitude System"
-            identifier = f"{self.system.serial}_system"
+            identifier = f"{self._id_base}_system"
 
         return DeviceInfo(
             identifiers={(DOMAIN, identifier)},
