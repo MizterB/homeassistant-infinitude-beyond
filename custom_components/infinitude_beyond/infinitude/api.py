@@ -77,9 +77,7 @@ class Infinitude:
                 resp.raise_for_status()
                 return await resp.json(content_type=None)
         except ClientError as e:
-            # Logged at debug only: during an outage this fires every update
-            # cycle. The coordinator logs the first failure and the recovery,
-            # and the connectivity sensor tracks the state.
+            # Debug only: this fires every update cycle during an outage.
             _LOGGER.debug("GET %s failed: %s", url, e)
             raise ConnectionError from e
 
