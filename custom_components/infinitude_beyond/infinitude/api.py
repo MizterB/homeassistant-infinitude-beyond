@@ -491,6 +491,16 @@ class InfinitudeSystem:
         return int(val)
 
     @property
+    def has_idu(self) -> bool:
+        """Whether the system reports indoor unit runtime data.
+
+        Variable/communicating indoor units publish an ``idu`` block; simpler
+        units (e.g. a fancoil) don't. Used to decide whether the airflow sensor
+        is worth registering at all.
+        """
+        return self._status.get("idu") is not None
+
+    @property
     def airflow_cfm(self) -> float | None:
         """System airflow in CFM."""
         idu = self._status.get("idu")
