@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Prepare HA",
+      "detail": "Link the integration into ./config and seed a minimal configuration.yaml",
+      "type": "shell",
+      "command": "scripts/setup_hass",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -4,23 +4,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-mkdir -p config
-
-# Seed a minimal config the first time.
-if [ ! -f config/configuration.yaml ]; then
-    cat > config/configuration.yaml <<'YAML'
-default_config:
-
-logger:
-  default: info
-  logs:
-    custom_components.infinitude_beyond: debug
-YAML
-fi
-
-# Expose the integration to HA without copying it.
-mkdir -p config/custom_components
-ln -sfn "$(pwd)/custom_components/infinitude_beyond" \
-    config/custom_components/infinitude_beyond
+scripts/setup_hass
 
 exec hass --config config --debug
