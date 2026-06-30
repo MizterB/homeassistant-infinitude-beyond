@@ -12,6 +12,7 @@ Tests are grouped into:
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 
 import infinitude.api as api_module
@@ -131,19 +132,28 @@ async def test_set_fan_mode_posts_manual_activity(infinitude):
 
 
 # --------------------------------------------------------------------------- #
-# Regression repros for open bugs (xfail until fixed)
+# POST response handling (#38/#39)
 # --------------------------------------------------------------------------- #
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#38/#39: _post crashes on a non-JSON/empty 200 body "
-    "(resp.json raises JSONDecodeError). Drop xfail once _post guards this.",
-)
 async def test_post_non_json_body_does_not_crash(infinitude):
-    # The test server returns a non-JSON 200 body for POST /api/config, as
-    # Infinitude does. _post calls resp.json() on it unconditionally and raises.
+    # Older Infinitude returns a non-JSON 200 body to a POST (the test server
+    # sends "Success"); _post must swallow the parse failure, not raise.
     await infinitude.system.set_hvac_mode(HVACMode.HEAT)
+
+
+async def test_post_empty_body_returns_none_and_warns(infinitude, caplog):
+    # An empty body is the exact #38/#39 condition (orjson "char 0"). _post
+    # returns None and logs a one-time hint to upgrade Infinitude.
+    with caplog.at_level(logging.WARNING):
+        result = await infinitude._post("/api/empty-test", {})
+    assert result is None
+    assert "upgrade" in caplog.text.lower()
+
+
+# --------------------------------------------------------------------------- #
+# Regression repros for open bugs (xfail until fixed)
+# --------------------------------------------------------------------------- #
 
 
 @pytest.mark.xfail(
