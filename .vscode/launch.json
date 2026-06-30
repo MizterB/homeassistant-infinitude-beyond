@@ -7,17 +7,14 @@
       "request": "launch",
       "module": "homeassistant",
       "args": ["--config", "${workspaceFolder}/config", "--debug"],
-      "cwd": "${workspaceFolder}",
+      // Run from the config dir so `python -m` puts ONLY the config dir on
+      // sys.path -- not the repo root, whose custom_components/ would collide
+      // with the config/ symlink and break platform imports. (Done via cwd
+      // rather than PYTHONSAFEPATH, which also suppresses debugpy's own paths.)
+      "cwd": "${workspaceFolder}/config",
       "console": "integratedTerminal",
       "preLaunchTask": "Prepare HA",
-      "justMyCode": false,
-      // `python -m` would prepend the repo root (which has its own
-      // custom_components/) to sys.path, colliding with the config/ symlink and
-      // breaking platform imports. PYTHONSAFEPATH stops that; HA adds the config
-      // dir to sys.path itself, so the integration still resolves -- from one place.
-      "env": {
-        "PYTHONSAFEPATH": "1"
-      }
+      "justMyCode": false
     }
   ]
 }
