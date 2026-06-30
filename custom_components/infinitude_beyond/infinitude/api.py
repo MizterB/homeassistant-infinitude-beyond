@@ -1,6 +1,7 @@
 """Define a base client for interacting with Infinitude."""
 
 import asyncio
+import json
 import logging
 from datetime import datetime, timedelta, timezone
 from re import match
@@ -47,6 +48,7 @@ class Infinitude:
         self._config: dict = {}
         self._energy: dict = {}
         self._profile: dict = {}
+        self._warned_post_non_json: bool = False
 
         if not self._session or self._session.closed:
             self._session = ClientSession()
@@ -73,24 +75,56 @@ class Infinitude:
         except ClientError as e:
             _LOGGER.error(e)
 
-    async def _post(self, endpoint: str, data: dict, **kwargs) -> dict:
-        """Make a POST request to Infinitude."""
+    async def _post(self, endpoint: str, data: dict, **kwargs) -> dict | None:
+        """POST to Infinitude.
+
+        Some Infinitude versions return an empty or non-JSON body on a
+        successful POST, and nothing here uses the response. Parse it only when
+        it's there; never let a bad or empty body raise, or a temp/hold change
+        shows an error in HA even though it actually worked.
+        """
         url = f"{self.url}{endpoint}"
         try:
             _LOGGER.debug("POST %s with %s and %s", url, data, kwargs)
             async with self._session.post(url, data=data, **kwargs) as resp:
+                text = await resp.text()
                 _LOGGER.debug(
                     "POST RESPONSE from %s with %s and %s is: %s",
                     url,
                     data,
                     kwargs,
-                    await resp.text(),
+                    text,
                 )
                 resp.raise_for_status()
-                resp_json: dict = await resp.json(content_type=None)
-                return resp_json
+                stripped = text.strip()
+                if stripped:
+                    try:
+                        return json.loads(stripped)
+                    except ValueError:
+                        pass
+                # Empty or non-JSON body: the request still succeeded.
+                self._warn_non_json_post(endpoint)
+                return None
         except ClientError as e:
             _LOGGER.error(e)
+
+    def _warn_non_json_post(self, endpoint: str) -> None:
+        """Log once that Infinitude sent an empty or non-JSON POST response."""
+        if not self._warned_post_non_json:
+            self._warned_post_non_json = True
+            _LOGGER.warning(
+                "Infinitude returned an empty or non-JSON response to POST %s, "
+                "but the request still went through. This usually means an older "
+                "Infinitude; if it keeps happening, upgrade to the latest version. "
+                "Further messages like this are logged at debug level.",
+                endpoint,
+            )
+        else:
+            _LOGGER.debug(
+                "Empty or non-JSON POST response from %s (request still went "
+                "through).",
+                endpoint,
+            )
 
     def _simplify_json(self, data) -> dict:
         """Remove all single item lists and replace with the item."""

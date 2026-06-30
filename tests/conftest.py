@@ -72,12 +72,16 @@ def _build_app(payloads: dict, posts: list) -> web.Application:
 
     async def post_config(request):
         await record(request)
-        # Infinitude can return a non-JSON body (or an empty one) on a successful
-        # POST. _post calls resp.json() on it unconditionally, which raises a
-        # JSONDecodeError -- the root of issues #38/#39. (HA's orjson loader also
-        # raises on an empty body; a non-JSON body reproduces it regardless of
-        # which JSON loader is in use.)
+        # Infinitude can return a non-JSON body on a successful POST (notably on
+        # older versions) -- the root of issues #38/#39. _post must handle it
+        # without raising.
         return web.Response(text="Success", content_type="text/plain")
+
+    async def post_empty(request):
+        await record(request)
+        # The other half of #38/#39: an empty body (what HA's orjson loader chokes
+        # on with "unexpected character: line 1 column 1").
+        return web.Response(text="")
 
     async def post_json(request):
         await record(request)
@@ -89,6 +93,7 @@ def _build_app(payloads: dict, posts: list) -> web.Application:
     app.router.add_get("/energy.json", energy)
     app.router.add_get("/profile.json", profile)
     app.router.add_post("/api/config", post_config)
+    app.router.add_post("/api/empty-test", post_empty)
     app.router.add_post("/api/{zone}/activity/{activity}", post_json)
     app.router.add_post("/api/{zone}/hold", post_json)
     return app
