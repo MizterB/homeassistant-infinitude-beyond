@@ -102,17 +102,6 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         super().__init__(coordinator, zone_id)
 
     @property
-    def supported_features(self):
-        """Return the supported features."""
-        baseline = ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.PRESET_MODE
-        if self.zone.hvac_mode == InfHVACMode.AUTO:
-            return baseline | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-        elif self.zone.hvac_mode in [InfHVACMode.HEAT, InfHVACMode.COOL]:
-            return baseline | ClimateEntityFeature.TARGET_TEMPERATURE
-        else:
-            return baseline
-
-    @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
         unit = self.zone.temperature_unit
