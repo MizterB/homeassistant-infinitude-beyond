@@ -195,11 +195,6 @@ class _LoopGuard(BaseException):
     """
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#42: _update_activities walks days forever when no schedule is "
-    "active. Drop xfail once the day-walk is bounded to 7 days.",
-)
 async def test_update_activities_terminates_without_schedule(infinitude, monkeypatch):
     # Swap zone 1 to a fully-disabled schedule (simplified, as connect() stores it).
     from tests.conftest import load_fixture
@@ -208,15 +203,17 @@ async def test_update_activities_terminates_without_schedule(infinitude, monkeyp
     infinitude._config = no_sched
     zone = infinitude.zones["1"]
 
-    # _update_activities advances one day per loop via `timedelta(days=1)`. Trip a
-    # guard once it walks past two weeks -- a bounded (<=7-day) implementation
-    # never gets there; the current unbounded loop does, almost immediately.
-    calls = {"n": 0}
+    # The loop advances one day per iteration via timedelta(days=1). Count only
+    # those day advances (local_timezone also builds timedeltas) and trip a guard
+    # past a week -- a bounded (<=7-day) walk never gets there; the old unbounded
+    # loop would spin into the millions.
+    day_steps = {"n": 0}
 
     def counting_timedelta(*args, **kwargs):
-        calls["n"] += 1
-        if calls["n"] > 14:
-            raise _LoopGuard
+        if kwargs.get("days"):
+            day_steps["n"] += 1
+            if day_steps["n"] > 8:
+                raise _LoopGuard
         return timedelta(*args, **kwargs)
 
     monkeypatch.setattr(api_module, "timedelta", counting_timedelta)
@@ -227,4 +224,5 @@ async def test_update_activities_terminates_without_schedule(infinitude, monkeyp
     except _LoopGuard:
         walked_unbounded = True
 
-    assert not walked_unbounded, "_update_activities walked past 14 days (unbounded)"
+    assert not walked_unbounded, "_update_activities walked past a week (unbounded)"
+    assert zone.activity_next is None  # no enabled schedule -> no next activity
