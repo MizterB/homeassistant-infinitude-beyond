@@ -151,6 +151,13 @@ async def test_post_empty_body_returns_none_and_warns(infinitude, caplog):
     assert "upgrade" in caplog.text.lower()
 
 
+async def test_get_raises_connection_error_on_failure(infinitude):
+    # A failed GET must raise (not return None), so connect() can report a
+    # connection problem instead of blowing up later in the fetchers (#20).
+    with pytest.raises(ConnectionError):
+        await infinitude._get("/api/fail")
+
+
 # --------------------------------------------------------------------------- #
 # Regression repros for open bugs (xfail until fixed)
 # --------------------------------------------------------------------------- #

@@ -65,15 +65,20 @@ class Infinitude:
         return f"{protocol}://{self.host}:{self.port}"
 
     async def _get(self, endpoint: str, **kwargs) -> dict:
-        """Make a GET request to Infinitude."""
+        """GET from Infinitude.
+
+        Raise ConnectionError on any request failure. Returning None here meant
+        the fetchers blew up later on a None response (issue #20); raising lets
+        connect() report it as a connection problem.
+        """
         url = f"{self.url}{endpoint}"
         try:
             async with self._session.get(url, **kwargs) as resp:
-                data: dict = await resp.json(content_type=None)
                 resp.raise_for_status()
-                return data
+                return await resp.json(content_type=None)
         except ClientError as e:
-            _LOGGER.error(e)
+            _LOGGER.error("GET %s failed: %s", url, e)
+            raise ConnectionError from e
 
     async def _post(self, endpoint: str, data: dict, **kwargs) -> dict | None:
         """POST to Infinitude.

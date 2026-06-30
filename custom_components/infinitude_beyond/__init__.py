@@ -79,8 +79,8 @@ class InfinitudeDataUpdateCoordinator(DataUpdateCoordinator):
         """Fetch data from Infinitude."""
         try:
             await self.infinitude.update()
-        except TimeoutError as err:
-            raise UpdateFailed(f"Timeout while communicating with API: {err}") from err
+        except (TimeoutError, ConnectionError) as err:
+            raise UpdateFailed(f"Error communicating with Infinitude: {err}") from err
 
 
 class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):
