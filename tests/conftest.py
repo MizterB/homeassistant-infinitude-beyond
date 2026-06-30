@@ -87,11 +87,16 @@ def _build_app(payloads: dict, posts: list) -> web.Application:
         await record(request)
         return web.json_response({})
 
+    async def fail(_):
+        # A failing GET, for the connection-error path (issue #20).
+        return web.Response(status=500)
+
     app = web.Application()
     app.router.add_get("/api/status/", status)
     app.router.add_get("/api/config/", config)
     app.router.add_get("/energy.json", energy)
     app.router.add_get("/profile.json", profile)
+    app.router.add_get("/api/fail", fail)
     app.router.add_post("/api/config", post_config)
     app.router.add_post("/api/empty-test", post_empty)
     app.router.add_post("/api/{zone}/activity/{activity}", post_json)

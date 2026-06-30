@@ -9,7 +9,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL
 from homeassistant.data_entry_flow import FlowResultType
 
-from .conftest import ENTRY_DATA, UNIQUE_ID
+from .conftest import BASE, ENTRY_DATA, UNIQUE_ID
 
 
 async def test_form_is_shown(hass):
@@ -50,3 +50,20 @@ async def test_aborts_if_already_configured(hass, mock_infinitude, config_entry)
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "already_configured"
+
+
+async def test_user_flow_cannot_connect(hass, aioclient_mock):
+    # When the GETs fail, connect() raises ConnectionError and the flow reports
+    # cannot_connect instead of crashing with "Unknown error" (issue #20).
+    for path in ("/api/status/", "/api/config/", "/energy.json", "/profile.json"):
+        aioclient_mock.get(f"{BASE}{path}", status=500)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], ENTRY_DATA
+    )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect"}
