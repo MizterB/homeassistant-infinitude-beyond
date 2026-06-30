@@ -491,6 +491,16 @@ class InfinitudeSystem:
         return int(val)
 
     @property
+    def has_idu(self) -> bool:
+        """Whether the system reports indoor unit runtime data.
+
+        Variable/communicating indoor units publish an ``idu`` block; simpler
+        units (e.g. a fancoil) don't. Used to decide whether the airflow sensor
+        is worth registering at all.
+        """
+        return self._status.get("idu") is not None
+
+    @property
     def airflow_cfm(self) -> float | None:
         """System airflow in CFM."""
         idu = self._status.get("idu")
@@ -515,6 +525,25 @@ class InfinitudeSystem:
             if idu_opstat.isnumeric():
                 return int(idu_opstat)
             else:
+                return 0
+        return None
+
+    @property
+    def odu_modulation(self) -> int | None:
+        """Outdoor unit compressor modulation percentage.
+
+        Only get this if the ODU type is 'proteus' or 'gs3ngipac'
+        """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        if odu.get("type") in ["proteus", "gs3ngipac"]:
+            odu_opstat = odu.get("opstat")
+            if odu_opstat.isnumeric():
+                return int(odu_opstat)
+            if odu_opstat == "dehumidify":
+                return 1
+            if odu_opstat == "off":
                 return 0
         return None
 

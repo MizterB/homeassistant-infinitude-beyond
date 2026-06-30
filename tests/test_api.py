@@ -77,6 +77,24 @@ async def test_idu_modulation(infinitude):
     # idu type is 'furnacemodulating' with opstat 35 in the fixture
     assert infinitude.system.idu_modulation == 35
     assert infinitude.system.airflow_cfm == 800.0
+    assert infinitude.system.has_idu is True
+
+
+async def test_odu_modulation(infinitude):
+    # The fixture has no odu block, so there's nothing to report.
+    assert infinitude.system.odu_modulation is None
+
+    odu = infinitude._status["odu"] = {"type": "proteus"}
+    odu["opstat"] = "45"
+    assert infinitude.system.odu_modulation == 45
+    odu["opstat"] = "dehumidify"
+    assert infinitude.system.odu_modulation == 1
+    odu["opstat"] = "off"
+    assert infinitude.system.odu_modulation == 0
+
+    # A unit type we don't read modulation from reports nothing.
+    infinitude._status["odu"] = {"type": "ac2stg", "opstat": "60"}
+    assert infinitude.system.odu_modulation is None
 
 
 async def test_zone_temperatures(infinitude):
