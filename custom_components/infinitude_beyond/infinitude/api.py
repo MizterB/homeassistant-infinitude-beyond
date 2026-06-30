@@ -526,7 +526,9 @@ class InfinitudeZone:
         activity_next = None
         activity_next_start = None
         try:
-            while activity_next is None:
+            # Walk at most one week ahead to find the next scheduled activity.
+            # Without a bound, a fully-disabled schedule loops indefinitely.
+            for _ in range(7):
                 day_name = dt.strftime("%A")
                 program = next(
                     day
@@ -552,6 +554,8 @@ class InfinitudeZone:
                         activity_next = period["activity"]
                         activity_next_start = period_dt
                         break
+                if activity_next is not None:
+                    break
                 dt = datetime(
                     year=dt.year,
                     month=dt.month,
