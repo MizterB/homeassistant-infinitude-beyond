@@ -10,7 +10,14 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "preLaunchTask": "Prepare HA",
-      "justMyCode": false
+      "justMyCode": false,
+      // `python -m` would prepend the repo root (which has its own
+      // custom_components/) to sys.path, colliding with the config/ symlink and
+      // breaking platform imports. PYTHONSAFEPATH stops that; HA adds the config
+      // dir to sys.path itself, so the integration still resolves -- from one place.
+      "env": {
+        "PYTHONSAFEPATH": "1"
+      }
     }
   ]
 }
