@@ -18,6 +18,7 @@ from datetime import timedelta
 import infinitude.api as api_module
 import pytest
 from infinitude.const import (
+    Activity,
     FanMode,
     HoldMode,
     HoldState,
@@ -243,3 +244,35 @@ async def test_update_activities_terminates_without_schedule(infinitude, monkeyp
 
     assert not walked_unbounded, "_update_activities walked past a week (unbounded)"
     assert zone.activity_next is None  # no enabled schedule -> no next activity
+
+
+async def test_update_activities_handles_after_midnight_wrap(infinitude):
+    # A period whose time wraps past midnight (sleep@00:00 listed after wake@06:00)
+    # belongs to the next day, not the same day. The fixture clock is Monday 08:00,
+    # so the active activity is wake -- not the midnight sleep entry (#47).
+    days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ]
+    zcfg = next(z for z in infinitude._config["zones"]["zone"] if z["id"] == "1")
+    zcfg["program"]["day"] = [
+        {
+            "id": d,
+            "period": [
+                {"id": "1", "time": "06:00", "activity": "wake", "enabled": "on"},
+                {"id": "2", "time": "00:00", "activity": "sleep", "enabled": "on"},
+            ],
+        }
+        for d in days
+    ]
+
+    zone = infinitude.zones["1"]
+    zone._update_activities()
+
+    assert zone.activity_scheduled is Activity.WAKE
+    assert zone.activity_next is Activity.SLEEP

@@ -559,51 +559,97 @@ class InfinitudeZone:
         return zone_status
 
     def _update_activities(self) -> None:
-        dt = self._infinitude.system.local_time
+        """Compute scheduled and next activities from the program schedule.
+
+        Handles after-midnight times (e.g. 00:00 / 00:15) that may appear
+        later in the period list by treating backwards time jumps as
+        wrapping into the next day.
+        """
+        now = self._infinitude.system.local_time
+        tz = self._infinitude.system.local_timezone
+
         activity_scheduled = None
         activity_scheduled_start = None
         activity_next = None
         activity_next_start = None
+
+        if now is None:
+            self._activity_scheduled = None
+            self._activity_scheduled_start = None
+            self._activity_next = None
+            self._activity_next_start = None
+            return
+
         try:
-            # Walk at most one week ahead to find the next scheduled activity.
-            # Without a bound, a fully-disabled schedule loops indefinitely.
-            for _ in range(7):
-                day_name = dt.strftime("%A")
-                program = next(
-                    day
-                    for day in self._config["program"]["day"]
-                    if day["id"] == day_name
+            program_days = self._config.get("program", {}).get("day", [])
+            if not program_days:
+                raise KeyError("Missing program/day schedule in zone config")
+
+            timeline: list[tuple[datetime, str]] = []
+            base_date = now.date()
+
+            for day_offset in (-1, 0, 1, 2):
+                day_date = base_date + timedelta(days=day_offset)
+                day_name = day_date.strftime("%A")
+
+                day_cfg = next(
+                    (d for d in program_days if d.get("id") == day_name), None
                 )
-                for period in program["period"]:
-                    if period["enabled"] == "off":
+                if not day_cfg:
+                    continue
+
+                periods = day_cfg.get("period", [])
+                if not periods:
+                    continue
+
+                wrap_days = 0
+                prev_minutes = None
+
+                for period in periods:
+                    if period.get("enabled") == "off":
                         continue
-                    period_hh, period_mm = period["time"].split(":")
+
+                    time_str = period.get("time")
+                    activity = period.get("activity")
+                    if not time_str or not activity:
+                        continue
+
+                    hh, mm = map(int, time_str.split(":"))
+                    minutes = hh * 60 + mm
+
+                    if prev_minutes is not None and minutes < prev_minutes:
+                        wrap_days += 1
+                    prev_minutes = minutes
+
+                    period_date = day_date + timedelta(days=wrap_days)
                     period_dt = datetime(
-                        year=dt.year,
-                        month=dt.month,
-                        day=dt.day,
-                        hour=int(period_hh),
-                        minute=int(period_mm),
-                        tzinfo=self._infinitude.system.local_timezone,
+                        period_date.year,
+                        period_date.month,
+                        period_date.day,
+                        hh,
+                        mm,
+                        tzinfo=tz,
                     )
-                    if period_dt < dt:
-                        activity_scheduled = period["activity"]
-                        activity_scheduled_start = period_dt
-                    if period_dt >= dt:
-                        activity_next = period["activity"]
-                        activity_next_start = period_dt
-                        break
-                if activity_next is not None:
+
+                    timeline.append((period_dt, activity))
+
+            if not timeline:
+                raise ValueError("No enabled periods found in program schedule")
+
+            timeline.sort(key=lambda x: x[0])
+
+            for dt, act in timeline:
+                if dt <= now:
+                    activity_scheduled = act
+                    activity_scheduled_start = dt
+                elif dt > now and activity_next is None:
+                    activity_next = act
+                    activity_next_start = dt
                     break
-                dt = datetime(
-                    year=dt.year,
-                    month=dt.month,
-                    day=dt.day,
-                    tzinfo=self._infinitude.system.local_timezone,
-                ) + timedelta(days=1)
+
         except Exception as e:
             _LOGGER.debug(
-                "Error updating activities: %s\nProgram config is %s", e, program
+                "Error updating activities: %s\nZone config is %s", e, self._config
             )
 
         self._activity_scheduled = activity_scheduled
