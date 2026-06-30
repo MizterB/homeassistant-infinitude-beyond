@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from custom_components.infinitude_beyond.const import DOMAIN
+from homeassistant.components.climate import ClimateEntityFeature
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 
@@ -27,6 +28,18 @@ async def test_setup_creates_climate_entities(hass, mock_infinitude, config_entr
     states_by_temp = {s.attributes.get("current_temperature") for s in climate_states}
     assert states_by_temp == {70.0, 68.0}
     assert all(s.state == "heat" for s in climate_states)
+
+
+async def test_climate_target_temperature_supported_in_any_mode(
+    hass, mock_infinitude, config_entry
+):
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    feats = hass.states.async_all("climate")[0].attributes["supported_features"]
+    assert feats & ClimateEntityFeature.TARGET_TEMPERATURE
+    assert feats & ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
 
 
 async def test_unload_entry(hass, mock_infinitude, config_entry):
