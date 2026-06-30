@@ -24,7 +24,14 @@ from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import InfinitudeDataUpdateCoordinator, InfinitudeEntity
-from .const import DOMAIN, PRESET_HOLD, PRESET_HOLD_UNTIL, PRESET_SCHEDULE, PRESET_WAKE
+from .const import (
+    DOMAIN,
+    LEGACY_PRESET_ALIASES,
+    PRESET_HOLD,
+    PRESET_HOLD_UNTIL,
+    PRESET_SCHEDULE,
+    PRESET_WAKE,
+)
 from .infinitude.const import (
     Activity as InfActivity,
     FanMode as InfFanMode,
@@ -313,6 +320,8 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
         _LOGGER.debug("Set preset mode: %s", preset_mode)
+        # Accept the pre-slug preset names so older automations keep working.
+        preset_mode = LEGACY_PRESET_ALIASES.get(preset_mode, preset_mode)
         if preset_mode == PRESET_SCHEDULE:
             # Remove all holds to restore the normal schedule
             await self.zone.set_hold_mode(mode=InfHoldMode.OFF)

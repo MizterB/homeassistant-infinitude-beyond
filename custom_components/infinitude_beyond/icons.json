@@ -5,10 +5,10 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "Scheduled activity": "mdi:clock-outline",
-              "Wake": "mdi:alarm",
-              "Hold indefinitely": "mdi:infinity",
-              "Hold until next activity": "mdi:motion-pause-outline"
+              "schedule": "mdi:clock-outline",
+              "wake": "mdi:alarm",
+              "hold": "mdi:infinity",
+              "hold_until": "mdi:motion-pause-outline"
             }
           }
         }
