@@ -5,10 +5,12 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -60,7 +62,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up Infinitude binary sensors from config entry."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    entities = []
+    entities = [InfinitudeConnectivityBinarySensorEntity(coordinator)]
     for entity_description in SYSTEM_BINARY_SENSORS:
         entities.append(InfinitudeBinarySensorEntity(coordinator, entity_description))
     zones = [z for z in coordinator.infinitude.zones.values() if z.enabled]
@@ -98,3 +100,27 @@ class InfinitudeBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
         if self.entity_description.extra_state_attributes_fn is not None:
             return self.entity_description.extra_state_attributes_fn(self)
         return None
+
+
+class InfinitudeConnectivityBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
+    """Reports whether Home Assistant can reach Infinitude.
+
+    This one stays available even when the connection is down -- a normal
+    coordinator entity goes unavailable the moment a fetch fails, which is
+    exactly when you'd want to read it. So it overrides availability and
+    reports the coordinator's last fetch result instead.
+    """
+
+    _attr_name = "Connectivity"
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def available(self) -> bool:
+        """The connectivity sensor itself is always available."""
+        return True
+
+    @property
+    def is_on(self) -> bool:
+        """True while the last fetch from Infinitude succeeded."""
+        return self.coordinator.last_update_success

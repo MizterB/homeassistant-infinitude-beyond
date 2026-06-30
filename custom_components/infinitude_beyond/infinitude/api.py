@@ -77,7 +77,10 @@ class Infinitude:
                 resp.raise_for_status()
                 return await resp.json(content_type=None)
         except ClientError as e:
-            _LOGGER.error("GET %s failed: %s", url, e)
+            # Logged at debug only: during an outage this fires every update
+            # cycle. The coordinator logs the first failure and the recovery,
+            # and the connectivity sensor tracks the state.
+            _LOGGER.debug("GET %s failed: %s", url, e)
             raise ConnectionError from e
 
     async def _post(self, endpoint: str, data: dict, **kwargs) -> dict | None:
