@@ -10,6 +10,10 @@ services:
     image: mcr.microsoft.com/devcontainers/python:3.14
     volumes:
       - ..:/workspace:cached
+      # Shadow a host-created .venv with an empty container volume so a macOS
+      # virtualenv mounted from the host isn't picked up as the interpreter here
+      # (its binaries can't run in Linux). The container uses /usr/local/bin/python.
+      - /workspace/.venv
     command: sleep infinity
     working_dir: /workspace
     ports:

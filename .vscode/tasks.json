@@ -7,6 +7,17 @@
       "type": "shell",
       "command": "scripts/setup_hass",
       "problemMatcher": []
+    },
+    {
+      "label": "Run Home Assistant",
+      "detail": "Boot HA at :8123 with this integration loaded (scripts/develop)",
+      "type": "shell",
+      "command": "scripts/develop",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     }
   ]
 }
