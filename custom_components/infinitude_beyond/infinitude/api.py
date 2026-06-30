@@ -1,10 +1,10 @@
 """Define a base client for interacting with Infinitude."""
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+import json
 import logging
+from datetime import datetime, timedelta, timezone
 from re import match
-from typing import Optional
 
 from aiohttp import ClientSession
 from aiohttp.client_exceptions import ClientError
@@ -36,7 +36,7 @@ class Infinitude:
         port: int = 3000,
         ssl: bool = False,
         *,
-        session: Optional[ClientSession] = None,
+        session: ClientSession | None = None,
     ) -> None:
         """Initialize the Infinitude API."""
         self.host: str = host
@@ -48,6 +48,7 @@ class Infinitude:
         self._config: dict = {}
         self._energy: dict = {}
         self._profile: dict = {}
+        self._warned_post_non_json: bool = False
 
         if not self._session or self._session.closed:
             self._session = ClientSession()
@@ -64,34 +65,71 @@ class Infinitude:
         return f"{protocol}://{self.host}:{self.port}"
 
     async def _get(self, endpoint: str, **kwargs) -> dict:
-        """Make a GET request to Infinitude."""
+        """GET from Infinitude.
+
+        Raise ConnectionError on any request failure. Returning None here meant
+        the fetchers blew up later on a None response (issue #20); raising lets
+        connect() report it as a connection problem.
+        """
         url = f"{self.url}{endpoint}"
         try:
             async with self._session.get(url, **kwargs) as resp:
-                data: dict = await resp.json(content_type=None)
                 resp.raise_for_status()
-                return data
+                return await resp.json(content_type=None)
         except ClientError as e:
-            _LOGGER.error(e)
+            _LOGGER.error("GET %s failed: %s", url, e)
+            raise ConnectionError from e
 
-    async def _post(self, endpoint: str, data: dict, **kwargs) -> dict:
-        """Make a POST request to Infinitude."""
+    async def _post(self, endpoint: str, data: dict, **kwargs) -> dict | None:
+        """POST to Infinitude.
+
+        Some Infinitude versions return an empty or non-JSON body on a
+        successful POST, and nothing here uses the response. Parse it only when
+        it's there; never let a bad or empty body raise, or a temp/hold change
+        shows an error in HA even though it actually worked.
+        """
         url = f"{self.url}{endpoint}"
         try:
             _LOGGER.debug("POST %s with %s and %s", url, data, kwargs)
             async with self._session.post(url, data=data, **kwargs) as resp:
+                text = await resp.text()
                 _LOGGER.debug(
                     "POST RESPONSE from %s with %s and %s is: %s",
                     url,
                     data,
                     kwargs,
-                    await resp.text(),
+                    text,
                 )
                 resp.raise_for_status()
-                resp_json: dict = await resp.json(content_type=None)
-                return resp_json
+                stripped = text.strip()
+                if stripped:
+                    try:
+                        return json.loads(stripped)
+                    except ValueError:
+                        pass
+                # Empty or non-JSON body: the request still succeeded.
+                self._warn_non_json_post(endpoint)
+                return None
         except ClientError as e:
             _LOGGER.error(e)
+
+    def _warn_non_json_post(self, endpoint: str) -> None:
+        """Log once that Infinitude sent an empty or non-JSON POST response."""
+        if not self._warned_post_non_json:
+            self._warned_post_non_json = True
+            _LOGGER.warning(
+                "Infinitude returned an empty or non-JSON response to POST %s, "
+                "but the request still went through. This usually means an older "
+                "Infinitude; if it keeps happening, upgrade to the latest version. "
+                "Further messages like this are logged at debug level.",
+                endpoint,
+            )
+        else:
+            _LOGGER.debug(
+                "Empty or non-JSON POST response from %s (request still went "
+                "through).",
+                endpoint,
+            )
 
     def _simplify_json(self, data) -> dict:
         """Remove all single item lists and replace with the item."""
@@ -182,7 +220,7 @@ class Infinitude:
                 self._energy = energy
                 self._profile = profile
 
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             _LOGGER.error(
                 "Failed to connect to Infinitude at %s:%s after %s seconds",
                 self.host,
@@ -208,7 +246,7 @@ class Infinitude:
                 await self._update_status(status)
                 await self._update_config(config)
                 await self._update_energy(energy)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             _LOGGER.error("Update timed out after %s seconds", UPDATE_TIMEOUT)
             raise TimeoutError from e
 
@@ -453,6 +491,16 @@ class InfinitudeSystem:
         return int(val)
 
     @property
+    def has_idu(self) -> bool:
+        """Whether the system reports indoor unit runtime data.
+
+        Variable/communicating indoor units publish an ``idu`` block; simpler
+        units (e.g. a fancoil) don't. Used to decide whether the airflow sensor
+        is worth registering at all.
+        """
+        return self._status.get("idu") is not None
+
+    @property
     def airflow_cfm(self) -> float | None:
         """System airflow in CFM."""
         idu = self._status.get("idu")
@@ -477,6 +525,25 @@ class InfinitudeSystem:
             if idu_opstat.isnumeric():
                 return int(idu_opstat)
             else:
+                return 0
+        return None
+
+    @property
+    def odu_modulation(self) -> int | None:
+        """Outdoor unit compressor modulation percentage.
+
+        Only get this if the ODU type is 'proteus' or 'gs3ngipac'
+        """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        if odu.get("type") in ["proteus", "gs3ngipac"]:
+            odu_opstat = odu.get("opstat")
+            if odu_opstat.isnumeric():
+                return int(odu_opstat)
+            if odu_opstat == "dehumidify":
+                return 1
+            if odu_opstat == "off":
                 return 0
         return None
 
@@ -521,47 +588,97 @@ class InfinitudeZone:
         return zone_status
 
     def _update_activities(self) -> None:
-        dt = self._infinitude.system.local_time
+        """Compute scheduled and next activities from the program schedule.
+
+        Handles after-midnight times (e.g. 00:00 / 00:15) that may appear
+        later in the period list by treating backwards time jumps as
+        wrapping into the next day.
+        """
+        now = self._infinitude.system.local_time
+        tz = self._infinitude.system.local_timezone
+
         activity_scheduled = None
         activity_scheduled_start = None
         activity_next = None
         activity_next_start = None
+
+        if now is None:
+            self._activity_scheduled = None
+            self._activity_scheduled_start = None
+            self._activity_next = None
+            self._activity_next_start = None
+            return
+
         try:
-            while activity_next is None:
-                day_name = dt.strftime("%A")
-                program = next(
-                    day
-                    for day in self._config["program"]["day"]
-                    if day["id"] == day_name
+            program_days = self._config.get("program", {}).get("day", [])
+            if not program_days:
+                raise KeyError("Missing program/day schedule in zone config")
+
+            timeline: list[tuple[datetime, str]] = []
+            base_date = now.date()
+
+            for day_offset in (-1, 0, 1, 2):
+                day_date = base_date + timedelta(days=day_offset)
+                day_name = day_date.strftime("%A")
+
+                day_cfg = next(
+                    (d for d in program_days if d.get("id") == day_name), None
                 )
-                for period in program["period"]:
-                    if period["enabled"] == "off":
+                if not day_cfg:
+                    continue
+
+                periods = day_cfg.get("period", [])
+                if not periods:
+                    continue
+
+                wrap_days = 0
+                prev_minutes = None
+
+                for period in periods:
+                    if period.get("enabled") == "off":
                         continue
-                    period_hh, period_mm = period["time"].split(":")
+
+                    time_str = period.get("time")
+                    activity = period.get("activity")
+                    if not time_str or not activity:
+                        continue
+
+                    hh, mm = map(int, time_str.split(":"))
+                    minutes = hh * 60 + mm
+
+                    if prev_minutes is not None and minutes < prev_minutes:
+                        wrap_days += 1
+                    prev_minutes = minutes
+
+                    period_date = day_date + timedelta(days=wrap_days)
                     period_dt = datetime(
-                        year=dt.year,
-                        month=dt.month,
-                        day=dt.day,
-                        hour=int(period_hh),
-                        minute=int(period_mm),
-                        tzinfo=self._infinitude.system.local_timezone,
+                        period_date.year,
+                        period_date.month,
+                        period_date.day,
+                        hh,
+                        mm,
+                        tzinfo=tz,
                     )
-                    if period_dt < dt:
-                        activity_scheduled = period["activity"]
-                        activity_scheduled_start = period_dt
-                    if period_dt >= dt:
-                        activity_next = period["activity"]
-                        activity_next_start = period_dt
-                        break
-                dt = datetime(
-                    year=dt.year,
-                    month=dt.month,
-                    day=dt.day,
-                    tzinfo=self._infinitude.system.local_timezone,
-                ) + timedelta(days=1)
+
+                    timeline.append((period_dt, activity))
+
+            if not timeline:
+                raise ValueError("No enabled periods found in program schedule")
+
+            timeline.sort(key=lambda x: x[0])
+
+            for dt, act in timeline:
+                if dt <= now:
+                    activity_scheduled = act
+                    activity_scheduled_start = dt
+                elif dt > now and activity_next is None:
+                    activity_next = act
+                    activity_next_start = dt
+                    break
+
         except Exception as e:
             _LOGGER.debug(
-                "Error updating activities: %s\nProgram config is %s", e, program
+                "Error updating activities: %s\nZone config is %s", e, self._config
             )
 
         self._activity_scheduled = activity_scheduled
@@ -678,9 +795,19 @@ class InfinitudeZone:
 
     @property
     def hold_until(self) -> datetime | None:
-        """Hold until time."""
-        val = self._status.get("otmr")
+        """Hold until time.
+
+        Read 'otmr' from config first: Infinitude writes hold/holdActivity/otmr
+        to config synchronously when a hold is set, while the status 'otmr' lags
+        until the thermostat next syncs back. Reading status alone briefly
+        reports a timed hold as indefinite. Fall back to status for any version
+        that doesn't expose otmr in config. An empty value or the literal
+        'forever' (indefinite hold) has no time component.
+        """
+        val = self._config.get("otmr")
         if not isinstance(val, str):
+            val = self._status.get("otmr")
+        if not isinstance(val, str) or ":" not in val:
             return None
         until_hh, until_mm = val.split(":")
         dt = self._infinitude.system.local_time

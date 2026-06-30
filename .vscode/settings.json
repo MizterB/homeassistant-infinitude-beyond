@@ -1,0 +1,10 @@
+{
+  // The Layer 1 tests import the vendored client as a top-level `infinitude`
+  // package (conftest.py adds this dir to sys.path at runtime); tell Pylance
+  // about it so those imports resolve in the editor too.
+  "python.analysis.extraPaths": ["custom_components/infinitude_beyond"],
+
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["tests"]
+}

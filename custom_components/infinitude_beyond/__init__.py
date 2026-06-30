@@ -1,8 +1,8 @@
 """The Infinitude integration."""
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SSL, Platform
@@ -79,8 +79,8 @@ class InfinitudeDataUpdateCoordinator(DataUpdateCoordinator):
         """Fetch data from Infinitude."""
         try:
             await self.infinitude.update()
-        except TimeoutError as err:
-            raise UpdateFailed(f"Timeout while communicating with API: {err}") from err
+        except (TimeoutError, ConnectionError) as err:
+            raise UpdateFailed(f"Error communicating with Infinitude: {err}") from err
 
 
 class InfinitudeEntity(CoordinatorEntity[InfinitudeDataUpdateCoordinator]):

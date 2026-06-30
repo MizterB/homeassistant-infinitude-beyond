@@ -1,0 +1,3684 @@
+{
+  "data": {
+    "cfgem": [
+      "F"
+    ],
+    "cfgtype": [
+      "heatcool"
+    ],
+    "mode": [
+      "heat"
+    ],
+    "vacat": [
+      "off"
+    ],
+    "weatherPostalCode": [
+      "00000"
+    ],
+    "wholeHouse": [
+      "off"
+    ],
+    "zones": [
+      {
+        "zone": [
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "on"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "1",
+            "name": [
+              "Living Room"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "on"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "2",
+            "name": [
+              "Bedroom"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "3",
+            "name": [
+              "Zone 3"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "4",
+            "name": [
+              "Zone 4"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "5",
+            "name": [
+              "Zone 5"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "6",
+            "name": [
+              "Zone 6"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "7",
+            "name": [
+              "Zone 7"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "activities": {
+              "activity": [
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "68.0"
+                  ],
+                  "id": "home"
+                },
+                {
+                  "clsp": [
+                    "82.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "62.0"
+                  ],
+                  "id": "away"
+                },
+                {
+                  "clsp": [
+                    "78.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "66.0"
+                  ],
+                  "id": "sleep"
+                },
+                {
+                  "clsp": [
+                    "75.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "wake"
+                },
+                {
+                  "clsp": [
+                    "76.0"
+                  ],
+                  "fan": [
+                    "off"
+                  ],
+                  "htsp": [
+                    "70.0"
+                  ],
+                  "id": "manual"
+                }
+              ]
+            },
+            "enabled": [
+              "off"
+            ],
+            "hold": [
+              "off"
+            ],
+            "holdActivity": [
+              {}
+            ],
+            "id": "8",
+            "name": [
+              "Zone 8"
+            ],
+            "otmr": [
+              {}
+            ],
+            "program": {
+              "day": [
+                {
+                  "id": "Sunday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Monday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Tuesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Wednesday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Thursday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Friday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "Saturday",
+                  "period": [
+                    {
+                      "activity": [
+                        "wake"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "1",
+                      "time": [
+                        "06:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "away"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "2",
+                      "time": [
+                        "08:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "home"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "3",
+                      "time": [
+                        "17:00"
+                      ]
+                    },
+                    {
+                      "activity": [
+                        "sleep"
+                      ],
+                      "enabled": [
+                        "off"
+                      ],
+                      "id": "4",
+                      "time": [
+                        "22:00"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

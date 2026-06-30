@@ -1,0 +1,28 @@
+# Dev environment: a Home Assistant workspace + the hardware-free Infinitude
+# bed on one network.
+#
+# Run against EITHER:
+#   - the local bed  -> config flow host "infinitude", port 3000
+#   - a real system  -> config flow host <your-host>, port <your-port>
+#     (the workspace container has normal outbound network access)
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:3.14
+    volumes:
+      - ..:/workspace:cached
+      # Shadow a host-created .venv with an empty container volume so a macOS
+      # virtualenv mounted from the host isn't picked up as the interpreter here
+      # (its binaries can't run in Linux). The container uses /usr/local/bin/python.
+      - /workspace/.venv
+    command: sleep infinity
+    working_dir: /workspace
+    ports:
+      - "8123:8123" # Home Assistant UI
+
+  # Mirrors tests/docker/docker-compose.yml; reachable in-network as infinitude:3000.
+  infinitude:
+    image: nebulous/infinitude:latest
+    environment:
+      - MODE=production
+      - EMULATE_SAM=1
+    restart: unless-stopped

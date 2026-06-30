@@ -1,10 +1,9 @@
 """Climate for Infinitude."""
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
 import voluptuous as vol
-
 from homeassistant.components.climate import (
     FAN_AUTO,
     FAN_HIGH,
@@ -25,7 +24,14 @@ from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import InfinitudeDataUpdateCoordinator, InfinitudeEntity
-from .const import DOMAIN, PRESET_HOLD, PRESET_HOLD_UNTIL, PRESET_SCHEDULE, PRESET_WAKE
+from .const import (
+    DOMAIN,
+    LEGACY_PRESET_ALIASES,
+    PRESET_HOLD,
+    PRESET_HOLD_UNTIL,
+    PRESET_SCHEDULE,
+    PRESET_WAKE,
+)
 from .infinitude.const import (
     Activity as InfActivity,
     FanMode as InfFanMode,
@@ -101,17 +107,6 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     ) -> None:
         """Set up the instance."""
         super().__init__(coordinator, zone_id)
-
-    @property
-    def supported_features(self):
-        """Return the supported features."""
-        baseline = ClimateEntityFeature.FAN_MODE | ClimateEntityFeature.PRESET_MODE
-        if self.zone.hvac_mode == InfHVACMode.AUTO:
-            return baseline | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-        elif self.zone.hvac_mode in [InfHVACMode.HEAT, InfHVACMode.COOL]:
-            return baseline | ClimateEntityFeature.TARGET_TEMPERATURE
-        else:
-            return baseline
 
     @property
     def temperature_unit(self) -> str:
@@ -289,15 +284,19 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     @property
     def preset_mode(self):
         """Return current preset mode."""
-        # If hold is off, preset is the currently scheduled activity
+        # If hold is off, preset should reflect the effective current activity when available.
+        # This avoids showing "Scheduled activity" (graph) or an out-of-date scheduled activity
+        # when Infinitude reports a different currentActivity.
         if self.zone.hold_mode == InfHoldMode.OFF:
-            if self.zone.activity_scheduled == InfActivity.HOME:
+            activity = self.zone.activity_current or self.zone.activity_scheduled
+
+            if activity == InfActivity.HOME:
                 return PRESET_HOME
-            elif self.zone.activity_scheduled == InfActivity.AWAY:
+            elif activity == InfActivity.AWAY:
                 return PRESET_AWAY
-            elif self.zone.activity_scheduled == InfActivity.SLEEP:
+            elif activity == InfActivity.SLEEP:
                 return PRESET_SLEEP
-            elif self.zone.activity_scheduled == InfActivity.WAKE:
+            elif activity == InfActivity.WAKE:
                 return PRESET_WAKE
             else:
                 return PRESET_SCHEDULE
@@ -321,6 +320,8 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
         _LOGGER.debug("Set preset mode: %s", preset_mode)
+        # Accept the pre-slug preset names so older automations keep working.
+        preset_mode = LEGACY_PRESET_ALIASES.get(preset_mode, preset_mode)
         if preset_mode == PRESET_SCHEDULE:
             # Remove all holds to restore the normal schedule
             await self.zone.set_hold_mode(mode=InfHoldMode.OFF)

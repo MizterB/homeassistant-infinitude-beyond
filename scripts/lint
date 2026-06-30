@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Lint the whole repo (integration source + tests).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+python3 -m ruff check .

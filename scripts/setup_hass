@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Prepare a local Home Assistant config dir with this integration linked in.
+# Idempotent; used by scripts/develop and the VS Code "Prepare HA" task.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+mkdir -p config/custom_components
+
+# Expose the integration to HA without copying it.
+ln -sfn "$(pwd)/custom_components/infinitude_beyond" \
+    config/custom_components/infinitude_beyond
+
+# Seed a minimal config the first time.
+if [ ! -f config/configuration.yaml ]; then
+    cat > config/configuration.yaml <<'YAML'
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.infinitude_beyond: debug
+YAML
+fi

@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Home Assistant",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "homeassistant",
+      "args": ["--config", "${workspaceFolder}/config", "--debug"],
+      // Run from the config dir so `python -m` puts ONLY the config dir on
+      // sys.path -- not the repo root, whose custom_components/ would collide
+      // with the config/ symlink and break platform imports. (Done via cwd
+      // rather than PYTHONSAFEPATH, which also suppresses debugpy's own paths.)
+      "cwd": "${workspaceFolder}/config",
+      "console": "integratedTerminal",
+      "preLaunchTask": "Prepare HA",
+      "justMyCode": false
+    }
+  ]
+}

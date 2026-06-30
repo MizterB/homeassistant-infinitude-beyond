@@ -1,8 +1,8 @@
 """Sensors for Infinitude."""
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -27,13 +27,22 @@ class InfinitudeSensorDescriptionMixin:
     """Mixin for Infinitude sensor."""
 
     value_fn: Callable[[InfinitudeEntity], StateType]
+    # Whether to register the sensor at all. Defaults to always; set it for
+    # sensors that only apply to certain hardware so we don't create entities
+    # that can never report a value.
+    exists_fn: Callable[[InfinitudeEntity], bool] = lambda _entity: True
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class InfinitudeSensorDescription(
     SensorEntityDescription, InfinitudeSensorDescriptionMixin
 ):
-    """Class describing Infinitude sensor entities."""
+    """Class describing Infinitude sensor entities.
+
+    ``kw_only`` keeps the inherited required fields from clashing with the
+    mixin's defaulted ``exists_fn``; every description already passes its
+    fields by keyword.
+    """
 
 
 SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
@@ -92,12 +101,24 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         # device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         native_unit_of_measurement="ft³/min",
         value_fn=lambda entity: entity.system.airflow_cfm,
+        # Airflow reads as None when idle, so gate on the IDU reporting at all.
+        exists_fn=lambda entity: entity.system.has_idu,
     ),
     InfinitudeSensorDescription(
         key="idu_modulation",
         name="IDU modulation",
         native_unit_of_measurement="%",
         value_fn=lambda entity: entity.system.idu_modulation,
+        # Only a modulating furnace reports this; non-None means the IDU does.
+        exists_fn=lambda entity: entity.system.idu_modulation is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="odu_modulation",
+        name="ODU modulation",
+        native_unit_of_measurement="%",
+        value_fn=lambda entity: entity.system.odu_modulation,
+        # Only a modulating outdoor unit reports this.
+        exists_fn=lambda entity: entity.system.odu_modulation is not None,
     ),
 )
 
@@ -175,13 +196,15 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     entities = []
     for entity_description in SYSTEM_SENSORS:
-        entities.append(InfinitudeSensorEntity(coordinator, entity_description))
+        entity = InfinitudeSensorEntity(coordinator, entity_description)
+        if entity_description.exists_fn(entity):
+            entities.append(entity)
     zones = [z for z in coordinator.infinitude.zones.values() if z.enabled]
     for zone in zones:
         for entity_description in ZONE_SENSORS:
-            entities.append(
-                InfinitudeSensorEntity(coordinator, entity_description, zone.id)
-            )
+            entity = InfinitudeSensorEntity(coordinator, entity_description, zone.id)
+            if entity_description.exists_fn(entity):
+                entities.append(entity)
     async_add_entities(entities)
 
 

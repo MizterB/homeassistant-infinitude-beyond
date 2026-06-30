@@ -1,4 +1,23 @@
 {
+  "entity": {
+    "climate": {
+      "infinitude_beyond_translation": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Scheduled activity",
+              "home": "Home",
+              "away": "Away",
+              "sleep": "Sleep",
+              "wake": "Wake",
+              "hold": "Hold indefinitely",
+              "hold_until": "Hold until next activity"
+            }
+          }
+        }
+      }
+    }
+  },
   "config": {
     "step": {
       "user": {

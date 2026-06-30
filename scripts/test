@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Run the test suite. Extra args are passed through to pytest.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+python3 -m pytest "$@"
