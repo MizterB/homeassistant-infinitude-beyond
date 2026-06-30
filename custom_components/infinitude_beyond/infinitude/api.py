@@ -519,6 +519,25 @@ class InfinitudeSystem:
         return None
 
     @property
+    def odu_modulation(self) -> int | None:
+        """Outdoor unit compressor modulation percentage.
+
+        Only get this if the ODU type is 'proteus' or 'gs3ngipac'
+        """
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        if odu.get("type") in ["proteus", "gs3ngipac"]:
+            odu_opstat = odu.get("opstat")
+            if odu_opstat.isnumeric():
+                return int(odu_opstat)
+            if odu_opstat == "dehumidify":
+                return 1
+            if odu_opstat == "off":
+                return 0
+        return None
+
+    @property
     def energy(self) -> dict | None:
         """Energy data."""
         if isinstance(self._energy, dict) and self._energy != {}:

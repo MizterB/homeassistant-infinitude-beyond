@@ -99,6 +99,12 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         native_unit_of_measurement="%",
         value_fn=lambda entity: entity.system.idu_modulation,
     ),
+    InfinitudeSensorDescription(
+        key="odu_modulation",
+        name="ODU modulation",
+        native_unit_of_measurement="%",
+        value_fn=lambda entity: entity.system.odu_modulation,
+    ),
 )
 
 ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
