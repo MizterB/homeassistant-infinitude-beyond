@@ -157,13 +157,10 @@ async def test_compare_data_handles_type_change(infinitude):
     assert diff is None or isinstance(diff, dict)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Task #1: hold_until reads otmr only from (lagging) status; a timed "
-    "hold is mislabeled INDEFINITE until status catches up. Fix reads config first.",
-)
 async def test_hold_until_prefers_config_otmr(infinitude):
-    # Simulate the window right after a timed hold: config has otmr, status lags.
+    # Right after a timed hold, config carries otmr while status lags. hold_until
+    # must read config first so the hold is reported as timed (UNTIL), not
+    # indefinite. (Regression test for the "Hold indefinitely" mislabel.)
     zcfg = next(z for z in infinitude._config["zones"]["zone"] if z["id"] == "1")
     zcfg["hold"] = "on"
     zcfg["holdActivity"] = "manual"
@@ -174,7 +171,20 @@ async def test_hold_until_prefers_config_otmr(infinitude):
 
     zone = infinitude.zones["1"]
     assert zone.hold_state is HoldState.ON
-    assert zone.hold_mode is HoldMode.UNTIL  # currently INDEFINITE -> the bug
+    assert zone.hold_mode is HoldMode.UNTIL
+
+
+async def test_hold_indefinite_when_otmr_forever(infinitude):
+    # Infinitude stores otmr="forever" for an indefinite hold. hold_until must
+    # treat that as no time component (and not crash on split(":")).
+    zcfg = next(z for z in infinitude._config["zones"]["zone"] if z["id"] == "1")
+    zcfg["hold"] = "on"
+    zcfg["holdActivity"] = "manual"
+    zcfg["otmr"] = "forever"
+
+    zone = infinitude.zones["1"]
+    assert zone.hold_until is None
+    assert zone.hold_mode is HoldMode.INDEFINITE
 
 
 class _LoopGuard(BaseException):

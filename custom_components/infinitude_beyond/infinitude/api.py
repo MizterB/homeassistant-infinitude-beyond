@@ -677,9 +677,19 @@ class InfinitudeZone:
 
     @property
     def hold_until(self) -> datetime | None:
-        """Hold until time."""
-        val = self._status.get("otmr")
+        """Hold until time.
+
+        Read 'otmr' from config first: Infinitude writes hold/holdActivity/otmr
+        to config synchronously when a hold is set, while the status 'otmr' lags
+        until the thermostat next syncs back. Reading status alone briefly
+        reports a timed hold as indefinite. Fall back to status for any version
+        that doesn't expose otmr in config. An empty value or the literal
+        'forever' (indefinite hold) has no time component.
+        """
+        val = self._config.get("otmr")
         if not isinstance(val, str):
+            val = self._status.get("otmr")
+        if not isinstance(val, str) or ":" not in val:
             return None
         until_hh, until_mm = val.split(":")
         dt = self._infinitude.system.local_time
