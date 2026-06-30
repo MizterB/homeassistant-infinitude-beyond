@@ -6,7 +6,8 @@
       "detail": "Link the integration into ./config and seed a minimal configuration.yaml",
       "type": "shell",
       "command": "scripts/setup_hass",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "hide": true
     },
     {
       "label": "Run Home Assistant",
