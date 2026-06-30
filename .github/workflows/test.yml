@@ -1,0 +1,50 @@
+name: Test
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+
+jobs:
+  lint:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install ruff
+      - run: ruff check .
+
+  unit:
+    # Layer 1: the API client tests, with NO Home Assistant installed. This both
+    # exercises the client and guarantees it stays HA-free (tests/ha is skipped).
+    name: Layer 1 (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -r requirements.test.txt
+      - run: python -m pytest
+
+  ha:
+    # Layer 2: Home Assistant integration tests via pytest-homeassistant-custom-
+    # component (pulls a recent Home Assistant).
+    name: Layer 2 (Home Assistant)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: |
+          python -m pip install -r requirements.test.txt
+          python -m pip install pytest-homeassistant-custom-component
+      - run: python -m pytest

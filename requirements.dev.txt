@@ -1,0 +1,6 @@
+# Full dev environment for the devcontainer: a runnable Home Assistant, the
+# Layer 2 test harness, and the Layer 1 test deps.
+homeassistant>=2024.1.0
+colorlog
+pytest-homeassistant-custom-component
+-r requirements.test.txt

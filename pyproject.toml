@@ -1,0 +1,34 @@
+[project]
+name = "infinitude_beyond"
+version = "0.0.0"
+description = "Tooling/test configuration for the Infinitude Beyond Home Assistant integration."
+requires-python = ">=3.14"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+# Global backstop so a runaway loop (e.g. the activity-walk bug) can't hang CI.
+timeout = 60
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+src = ["custom_components", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",  # line length handled by formatter
+]
+
+[tool.ruff.lint.isort]
+# Keep aliased imports grouped in one statement (matches Home Assistant style)
+# instead of exploding `X as Y` onto separate import lines.
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+# Layer 2 conftest must import Home Assistant AFTER pytest.importorskip(), so
+# imports can't be sorted to the top.
+"tests/ha/conftest.py" = ["E402", "I001"]

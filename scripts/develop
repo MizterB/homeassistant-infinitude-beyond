@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Boot a local Home Assistant instance with this integration loaded.
+# Requires `homeassistant` to be installed (see requirements.dev.txt).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+scripts/setup_hass
+
+exec hass --config config --debug

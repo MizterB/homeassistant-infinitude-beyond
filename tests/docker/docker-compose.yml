@@ -1,0 +1,16 @@
+# Hardware-free Infinitude server for local end-to-end testing.
+#
+# Runs the real nebulous/infinitude image with NO thermostat attached
+# (EMULATE_SAM, no SERIAL_TTY). After `docker compose up -d`, seed it with
+# public sample data via ./seed.sh, then point the integration (or a manual
+# capture) at http://localhost:13000.
+services:
+  infinitude:
+    image: nebulous/infinitude:latest
+    container_name: infinitude_test
+    ports:
+      - "13000:3000"
+    environment:
+      - MODE=production
+      - EMULATE_SAM=1
+    restart: unless-stopped

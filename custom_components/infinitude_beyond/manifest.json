@@ -5,6 +5,7 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/MizterB/homeassistant-infinitude-beyond",
+  "issue_tracker": "https://github.com/MizterB/homeassistant-infinitude-beyond/issues",
   "homekit": {},
   "iot_class": "local_polling",
   "requirements": [],
