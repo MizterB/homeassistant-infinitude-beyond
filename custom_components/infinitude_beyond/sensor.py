@@ -8,6 +8,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTemperature
@@ -207,6 +208,15 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         key="occupancy",
         name="Occupancy",
         value_fn=lambda entity: entity.zone.occupancy,
+    ),
+    InfinitudeSensorDescription(
+        key="humidity_current",
+        name="Humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        value_fn=lambda entity: entity.zone.humidity_current,
+        exists_fn=lambda entity: entity.zone.humidity_current is not None,
     ),
 )
 
