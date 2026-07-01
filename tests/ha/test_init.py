@@ -20,14 +20,19 @@ async def test_setup_creates_climate_entities(hass, mock_infinitude, config_entr
 
     assert config_entry.state is ConfigEntryState.LOADED
 
-    # The fixture enables zones 1 and 2 only -> two climate entities.
-    climate_states = hass.states.async_all("climate")
-    assert len(climate_states) == 2
+    # The fixture enables zones 1 and 2 -> two zone thermostats (plus the
+    # system-wide Vacation climate, which has no current_temperature).
+    zone_states = [
+        s
+        for s in hass.states.async_all("climate")
+        if s.attributes.get("current_temperature") is not None
+    ]
+    assert len(zone_states) == 2
 
     # System is in heat mode; zone 1 current 70F, zone 2 current 68F.
-    states_by_temp = {s.attributes.get("current_temperature") for s in climate_states}
+    states_by_temp = {s.attributes.get("current_temperature") for s in zone_states}
     assert states_by_temp == {70.0, 68.0}
-    assert all(s.state == "heat" for s in climate_states)
+    assert all(s.state == "heat" for s in zone_states)
 
 
 async def test_climate_target_temperature_supported_in_any_mode(
@@ -37,7 +42,13 @@ async def test_climate_target_temperature_supported_in_any_mode(
     assert await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
 
-    feats = hass.states.async_all("climate")[0].attributes["supported_features"]
+    # Pick a zone thermostat (the vacation climate only supports a temp range).
+    zone = next(
+        s
+        for s in hass.states.async_all("climate")
+        if s.attributes.get("current_temperature") is not None
+    )
+    feats = zone.attributes["supported_features"]
     assert feats & ClimateEntityFeature.TARGET_TEMPERATURE
     assert feats & ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
 

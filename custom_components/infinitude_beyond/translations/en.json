@@ -18,6 +18,14 @@
         }
       }
     },
+    "datetime": {
+      "vacation_start": {
+        "name": "Vacation start"
+      },
+      "vacation_end": {
+        "name": "Vacation end"
+      }
+    },
     "sensor": {
       "vacation": {
         "name": "Vacation",

@@ -20,7 +20,12 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN
 from .infinitude.api import Infinitude
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.CLIMATE,
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.DATETIME,
+]
 
 _LOGGER = logging.getLogger(__name__)
 

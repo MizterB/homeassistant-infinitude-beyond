@@ -8,7 +8,10 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from custom_components.infinitude_beyond.climate import InfinitudeClimate
+from custom_components.infinitude_beyond.climate import (
+    InfinitudeClimate,
+    InfinitudeVacationClimate,
+)
 from custom_components.infinitude_beyond.const import (
     PRESET_HOLD,
     PRESET_HOLD_UNTIL,
@@ -17,9 +20,11 @@ from custom_components.infinitude_beyond.const import (
 )
 from custom_components.infinitude_beyond.infinitude.const import (
     Activity,
+    FanMode,
     HeatSource,
     HoldMode,
 )
+from homeassistant.components.climate import HVACMode
 
 COMPONENT = Path(__file__).resolve().parents[2] / "custom_components" / "infinitude_beyond"
 CUSTOM_PRESETS = (PRESET_SCHEDULE, PRESET_WAKE, PRESET_HOLD, PRESET_HOLD_UNTIL)
@@ -31,7 +36,11 @@ def _make_entity():
     zone.set_hold_mode = AsyncMock()
     coordinator = MagicMock()
     coordinator.infinitude.zones = {"1": zone}
-    return InfinitudeClimate(coordinator, "1"), zone
+    entity = InfinitudeClimate(coordinator, "1")
+    # No vacation in play for these unit tests (skip the behavior-C branch).
+    entity.system.vacation_enabled = False
+    entity.system.set_vacation = AsyncMock()
+    return entity, zone
 
 
 def test_custom_presets_are_slugs():
@@ -86,3 +95,38 @@ async def test_preset_mode_reports_vacation_but_not_selectable():
     assert entity.preset_mode == "vacation"
     # ...but never offered as a selectable option (control lives elsewhere).
     assert "vacation" not in entity.preset_modes
+
+
+async def test_zone_preset_change_exits_vacation():
+    # Behavior C: picking a normal preset while vacation is on ends vacation.
+    entity, zone = _make_entity()
+    entity.system.vacation_enabled = True
+    await entity.async_set_preset_mode("home")
+    entity.system.set_vacation.assert_awaited_once_with(enabled=False)
+
+
+def _make_vacation_entity():
+    from unittest.mock import MagicMock
+
+    coordinator = MagicMock()
+    coordinator.infinitude.zones = {}
+    entity = InfinitudeVacationClimate(coordinator)
+    entity.system.set_vacation = AsyncMock()
+    return entity
+
+
+async def test_vacation_climate_hvac_mode_toggles_vacation():
+    entity = _make_vacation_entity()
+    await entity.async_set_hvac_mode(HVACMode.HEAT_COOL)
+    entity.system.set_vacation.assert_awaited_with(enabled=True)
+    await entity.async_set_hvac_mode(HVACMode.OFF)
+    entity.system.set_vacation.assert_awaited_with(enabled=False)
+
+
+async def test_vacation_climate_service_maps_fan_slug():
+    entity = _make_vacation_entity()
+    await entity.async_set_vacation(enabled=True, heat=60, cool=80, fan="low")
+    kwargs = entity.system.set_vacation.await_args.kwargs
+    assert kwargs["enabled"] is True
+    assert kwargs["heat"] == 60 and kwargs["cool"] == 80
+    assert kwargs["fan"] is FanMode.LOW
