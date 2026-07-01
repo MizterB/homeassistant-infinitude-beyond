@@ -39,3 +39,22 @@ async def test_connectivity_sensor_tracks_coordinator_without_going_unavailable(
     await hass.async_block_till_done()
 
     assert hass.states.get(conn.entity_id).state == "on"
+
+
+async def test_connectivity_off_when_thermostat_not_reporting(
+    hass, mock_infinitude, config_entry
+):
+    # Infinitude is reachable but the thermostat isn't reporting (empty status).
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    conn = _connectivity_state(hass)
+    assert conn.state == "on"
+
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator.infinitude._status = None  # thermostat not connected to Infinitude
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+
+    assert hass.states.get(conn.entity_id).state == "off"

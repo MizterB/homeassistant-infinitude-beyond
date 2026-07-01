@@ -345,6 +345,15 @@ class InfinitudeSystem:
         return self._infinitude._profile or {}
 
     @property
+    def connected(self) -> bool:
+        """Whether Infinitude is returning live thermostat data.
+
+        An empty status means Infinitude is reachable but the thermostat isn't
+        reporting to it.
+        """
+        return bool(self._status)
+
+    @property
     def brand(self) -> str | None:
         """Brand of the system."""
         val = self._profile.get("brand")
