@@ -625,6 +625,37 @@ class InfinitudeSystem:
         else:
             return None
 
+    def _vacation_datetime(self, value) -> datetime | None:
+        """Parse a vacation window timestamp, tolerating single-digit fields."""
+        if not isinstance(value, str):
+            return None
+        matches = match(r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})", value)
+        if not matches:
+            return None
+        try:
+            return datetime(
+                *(int(g) for g in matches.groups()), tzinfo=self.local_timezone
+            )
+        except ValueError:
+            return None
+
+    @property
+    def vacation_state(self) -> str:
+        """Derived vacation state: disabled, scheduled, active, or ended."""
+        if str(self._config.get("vacat", "off")).lower() != "on":
+            return "disabled"
+        zones = self._infinitude.zones or {}
+        if any(z.activity_current == Activity.VACATION for z in zones.values()):
+            return "active"
+        now = self.local_time
+        start = self._vacation_datetime(self._config.get("vacstart"))
+        end = self._vacation_datetime(self._config.get("vacend"))
+        if now and start and now < start:
+            return "scheduled"
+        if now and end and now >= end:
+            return "ended"
+        return "active"
+
 
 class InfinitudeZone:
     """Representation of zone-specific Infinitude data."""

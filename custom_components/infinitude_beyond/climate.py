@@ -30,6 +30,7 @@ from .const import (
     PRESET_HOLD,
     PRESET_HOLD_UNTIL,
     PRESET_SCHEDULE,
+    PRESET_VACATION,
     PRESET_WAKE,
 )
 from .infinitude.const import (
@@ -293,6 +294,10 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     @property
     def preset_mode(self):
         """Return current preset mode."""
+        # A running system vacation drives the zone regardless of hold state.
+        # Display-only: PRESET_VACATION is intentionally absent from preset_modes.
+        if self.zone.activity_current == InfActivity.VACATION:
+            return PRESET_VACATION
         # If hold is off, preset should reflect the effective current activity when available.
         # This avoids showing "Scheduled activity" (graph) or an out-of-date scheduled activity
         # when Infinitude reports a different currentActivity.

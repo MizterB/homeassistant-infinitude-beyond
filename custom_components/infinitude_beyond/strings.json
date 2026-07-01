@@ -11,13 +11,23 @@
               "sleep": "Sleep",
               "wake": "Wake",
               "hold": "Hold indefinitely",
-              "hold_until": "Hold until next activity"
+              "hold_until": "Hold until next activity",
+              "vacation": "Vacation"
             }
           }
         }
       }
     },
     "sensor": {
+      "vacation": {
+        "name": "Vacation",
+        "state": {
+          "disabled": "Disabled",
+          "scheduled": "Scheduled",
+          "active": "Active",
+          "ended": "Ended"
+        }
+      },
       "furnace_status": {
         "name": "Furnace status",
         "state": {

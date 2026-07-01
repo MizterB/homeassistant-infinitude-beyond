@@ -145,6 +145,11 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         value_fn=lambda entity: entity.system.heat_source,
         exists_fn=lambda entity: entity.system.heat_source is not None,
     ),
+    InfinitudeSensorDescription(
+        key="vacation",
+        translation_key="vacation",
+        value_fn=lambda entity: entity.system.vacation_state,
+    ),
 )
 
 ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
