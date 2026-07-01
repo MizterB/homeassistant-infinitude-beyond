@@ -103,12 +103,13 @@ class InfinitudeBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
 
 
 class InfinitudeConnectivityBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
-    """Reports whether Home Assistant can reach Infinitude.
+    """Reports whether live thermostat data is flowing.
 
-    This one stays available even when the connection is down -- a normal
-    coordinator entity goes unavailable the moment a fetch fails, which is
-    exactly when you'd want to read it. So it overrides availability and
-    reports the coordinator's last fetch result instead.
+    On means both links are healthy: Home Assistant reached Infinitude and
+    Infinitude is returning thermostat data. It reads "disconnected" when HA
+    can't reach Infinitude or when Infinitude is reachable but the thermostat
+    isn't reporting to it (empty status). Always available so it can actually
+    report the disconnected state.
     """
 
     _attr_name = "Connectivity"
@@ -122,5 +123,5 @@ class InfinitudeConnectivityBinarySensorEntity(InfinitudeEntity, BinarySensorEnt
 
     @property
     def is_on(self) -> bool:
-        """True while the last fetch from Infinitude succeeded."""
-        return self.coordinator.last_update_success
+        """True while HA reached Infinitude and the thermostat is reporting."""
+        return self.coordinator.last_update_success and self.system.connected
