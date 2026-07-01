@@ -190,6 +190,49 @@ async def test_vacation_state_active_via_zone_beats_stale_window(infinitude):
     assert infinitude.system.vacation_state == "active"
 
 
+def _last_config_post(infinitude):
+    return [p for p in infinitude.posts if p["path"] == "/api/config"][-1]["data"]
+
+
+async def test_set_vacation_enable_defaults_stale_window(infinitude):
+    # Stale placeholder window -> enabling installs a fresh one.
+    infinitude._config["vacstart"] = "2012-01-1T21:00:00-00:00"
+    infinitude._config["vacend"] = "2013-01-1T21:00:00-00:00"
+    await infinitude.system.set_vacation(enabled=True)
+    post = _last_config_post(infinitude)
+    assert post["vacat"] == "on"
+    assert "vacstart" in post and "vacend" in post
+
+
+async def test_set_vacation_keeps_valid_future_window(infinitude):
+    # A valid future window (fixture clock is 2024-01-15) is left untouched.
+    infinitude._config["vacstart"] = "2024-06-01T00:00:00-05:00"
+    infinitude._config["vacend"] = "2024-07-01T00:00:00-05:00"
+    await infinitude.system.set_vacation(enabled=True)
+    assert _last_config_post(infinitude) == {"vacat": "on"}
+
+
+async def test_set_vacation_writes_setpoints_and_fan(infinitude):
+    await infinitude.system.set_vacation(heat=60, cool=80, fan=FanMode.LOW)
+    assert _last_config_post(infinitude) == {
+        "vacmint": "60.0",
+        "vacmaxt": "80.0",
+        "vacfan": "low",
+    }
+
+
+async def test_vacation_setpoints_parse_float_strings(infinitude):
+    infinitude._config["vacmint"] = "60.0"
+    infinitude._config["vacmaxt"] = "90.0"
+    assert infinitude.system.vacation_heat == 60.0
+    assert infinitude.system.vacation_cool == 90.0
+
+
+async def test_set_vacation_disable(infinitude):
+    await infinitude.system.set_vacation(enabled=False)
+    assert _last_config_post(infinitude) == {"vacat": "off"}
+
+
 async def test_zone_temperatures(infinitude):
     zone = infinitude.zones["1"]
     assert zone.temperature_current == 70.0

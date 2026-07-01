@@ -665,6 +665,98 @@ class InfinitudeSystem:
             return "ended"
         return "active"
 
+    @property
+    def vacation_enabled(self) -> bool:
+        """Whether vacation is enabled in config."""
+        return str(self._config.get("vacat", "off")).lower() == "on"
+
+    @property
+    def vacation_active(self) -> bool:
+        """Whether vacation is currently in effect."""
+        return self.vacation_state == "active"
+
+    @property
+    def vacation_start(self) -> datetime | None:
+        """Configured vacation start."""
+        return self._vacation_datetime(self._config.get("vacstart"))
+
+    @property
+    def vacation_end(self) -> datetime | None:
+        """Configured vacation end."""
+        return self._vacation_datetime(self._config.get("vacend"))
+
+    @property
+    def vacation_heat(self) -> float | None:
+        """Vacation heat (minimum) setpoint."""
+        val = self._config.get("vacmint")
+        return float(val) if val not in (None, "") else None
+
+    @property
+    def vacation_cool(self) -> float | None:
+        """Vacation cool (maximum) setpoint."""
+        val = self._config.get("vacmaxt")
+        return float(val) if val not in (None, "") else None
+
+    @property
+    def vacation_fan(self) -> FanMode | None:
+        """Vacation fan mode."""
+        val = self._config.get("vacfan")
+        if not val:
+            return None
+        return next((f for f in FanMode if f.value == val), None)
+
+    async def set_vacation(
+        self,
+        *,
+        enabled: bool | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        heat: int | None = None,
+        cool: int | None = None,
+        fan: FanMode | None = None,
+    ) -> None:
+        """Write vacation config in a single request.
+
+        When enabling without an explicit window (or with a stale/past one),
+        default to now .. now+7 days.
+        """
+        # Write local wall-clock: reads ignore the stored offset and apply the
+        # system timezone, so the written value must be in that same frame.
+        tz = self.local_timezone
+        if start is not None:
+            start = start.replace(tzinfo=tz) if start.tzinfo is None else start.astimezone(tz)
+        if end is not None:
+            end = end.replace(tzinfo=tz) if end.tzinfo is None else end.astimezone(tz)
+
+        data: dict = {}
+        if enabled is not None:
+            data["vacat"] = "on" if enabled else "off"
+        if start is not None:
+            data["vacstart"] = start.replace(microsecond=0).isoformat()
+        if end is not None:
+            data["vacend"] = end.replace(microsecond=0).isoformat()
+        if heat is not None:
+            data["vacmint"] = str(float(heat))
+        if cool is not None:
+            data["vacmaxt"] = str(float(cool))
+        if fan is not None:
+            data["vacfan"] = fan.value
+
+        if data.get("vacat") == "on" and start is None and end is None:
+            now = self.local_time
+            cur_start, cur_end = self.vacation_start, self.vacation_end
+            if not cur_start or not cur_end or (now and cur_end <= now):
+                base = (now or datetime.now(tz=self.local_timezone)).replace(
+                    minute=0, second=0, microsecond=0
+                )
+                data["vacstart"] = base.isoformat()
+                data["vacend"] = (base + timedelta(days=7)).isoformat()
+
+        if not data:
+            return
+        await self._infinitude._post("/api/config", data)
+        await self._infinitude.update()
+
 
 class InfinitudeZone:
     """Representation of zone-specific Infinitude data."""

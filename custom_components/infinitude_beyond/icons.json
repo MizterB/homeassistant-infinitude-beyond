@@ -8,7 +8,8 @@
               "schedule": "mdi:clock-outline",
               "wake": "mdi:alarm",
               "hold": "mdi:infinity",
-              "hold_until": "mdi:motion-pause-outline"
+              "hold_until": "mdi:motion-pause-outline",
+              "vacation": "mdi:calendar"
             }
           }
         }
