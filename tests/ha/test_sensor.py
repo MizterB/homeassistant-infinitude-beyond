@@ -46,3 +46,19 @@ async def test_status_sensors_gate_and_use_key_based_ids(
         if e.translation_key == "furnace_status"
     )
     assert furnace.unique_id == f"{config_entry.entry_id}_system_furnace_status"
+
+
+async def test_humidity_sensor_per_enabled_zone(hass, mock_infinitude, config_entry):
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    humidity = [
+        s
+        for s in hass.states.async_all("sensor")
+        if s.attributes.get("device_class") == "humidity"
+    ]
+    # Fixture enables zones 1 and 2, both reporting rh 42.
+    assert len(humidity) == 2
+    assert all(s.state == "42" for s in humidity)
+    assert all(s.attributes.get("unit_of_measurement") == "%" for s in humidity)
