@@ -16,6 +16,45 @@
           }
         }
       }
+    },
+    "sensor": {
+      "furnace_status": {
+        "name": "Furnace status",
+        "state": {
+          "off": "Off",
+          "stage_1": "Stage 1",
+          "stage_2": "Stage 2",
+          "stage_3": "Stage 3",
+          "stage_4": "Stage 4",
+          "stage_5": "Stage 5",
+          "defrost": "Defrost",
+          "dehumidify": "Dehumidify"
+        }
+      },
+      "heatpump_status": {
+        "name": "Heat pump status",
+        "state": {
+          "off": "Off",
+          "stage_1": "Stage 1",
+          "stage_2": "Stage 2",
+          "stage_3": "Stage 3",
+          "stage_4": "Stage 4",
+          "stage_5": "Stage 5",
+          "defrost": "Defrost",
+          "dehumidify": "Dehumidify"
+        }
+      },
+      "heatpump_mode": {
+        "name": "Heat pump mode"
+      },
+      "heat_source": {
+        "name": "Heat source",
+        "state": {
+          "system": "System",
+          "gas": "Gas",
+          "heat_pump": "Heat Pump"
+        }
+      }
     }
   },
   "config": {

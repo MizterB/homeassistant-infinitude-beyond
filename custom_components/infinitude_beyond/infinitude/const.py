@@ -85,3 +85,11 @@ class HumidifierState(Enum):
 
     ON = "on"
     OFF = "off"
+
+
+class HeatSource(Enum):
+    """Heat source for dual-fuel systems (slug values; display via translation)."""
+
+    SYSTEM = "system"
+    GAS = "gas"
+    HEATPUMP = "heat_pump"

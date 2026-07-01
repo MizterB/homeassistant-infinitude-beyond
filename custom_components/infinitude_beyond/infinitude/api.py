@@ -12,6 +12,7 @@ from aiohttp.client_exceptions import ClientError
 from .const import (
     Activity,
     FanMode,
+    HeatSource,
     HoldMode,
     HoldState,
     HumidifierState,
@@ -25,6 +26,34 @@ _LOGGER = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT: int = 30
 UPDATE_TIMEOUT: int = 30
+
+# Known equipment status values -> translation slugs. Unknown values pass
+# through as-is (see _opstat_slug).
+_OPSTAT_SLUGS = {
+    "off": "off",
+    "stage 1": "stage_1",
+    "stage 2": "stage_2",
+    "stage 3": "stage_3",
+    "stage 4": "stage_4",
+    "stage 5": "stage_5",
+    "defrost": "defrost",
+    "dehumidify": "dehumidify",
+}
+
+# Infinitude config <-> heat source slug.
+_HEAT_SOURCE_FROM_CONFIG = {
+    "system": HeatSource.SYSTEM,
+    "idu only": HeatSource.GAS,
+    "odu only": HeatSource.HEATPUMP,
+}
+_HEAT_SOURCE_TO_CONFIG = {v: k for k, v in _HEAT_SOURCE_FROM_CONFIG.items()}
+
+
+def _opstat_slug(value) -> str | None:
+    """Slug for a known staging status; the raw value for anything else."""
+    if value in (None, ""):
+        return None
+    return _OPSTAT_SLUGS.get(str(value).strip().lower(), str(value))
 
 
 class Infinitude:
@@ -547,6 +576,46 @@ class InfinitudeSystem:
             if odu_opstat == "off":
                 return 0
         return None
+
+    @property
+    def furnace_status(self) -> str | None:
+        """Indoor unit operating status."""
+        idu = self._status.get("idu")
+        if not idu:
+            return None
+        return _opstat_slug(idu.get("opstat"))
+
+    @property
+    def heatpump_status(self) -> str | None:
+        """Outdoor unit operating status (heat pump stage)."""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        return _opstat_slug(odu.get("opstat"))
+
+    @property
+    def heatpump_mode(self) -> str | None:
+        """Outdoor unit operating mode."""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        val = odu.get("opmode")
+        return str(val) if val else None
+
+    @property
+    def heat_source(self) -> str | None:
+        """Configured heat source for dual-fuel systems."""
+        hs = self._config.get("heatsource")
+        if not hs:
+            return None
+        mapped = _HEAT_SOURCE_FROM_CONFIG.get(str(hs).strip().lower())
+        return mapped.value if mapped else None
+
+    async def set_heat_source(self, heatsource: HeatSource) -> None:
+        """Set the heat source for a dual-fuel system."""
+        data = {"heatsource": _HEAT_SOURCE_TO_CONFIG[heatsource]}
+        await self._infinitude._post("/api/config", data)
+        await self._infinitude.update()
 
     @property
     def energy(self) -> dict | None:

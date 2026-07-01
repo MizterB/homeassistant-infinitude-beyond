@@ -32,3 +32,23 @@ set_hold_mode:
             - "manual"
       description: "Name of the activity profile to hold with.  If not provided, defaults to the current activity."
       example: "'home', 'away', 'sleep', 'wake', 'manual'"
+
+set_heat_source:
+  description: Sets the heat source for a dual-fuel Infinitude system
+  target:
+    entity:
+      integration: infinitude_beyond
+      domain: climate
+  fields:
+    heat_source:
+      selector:
+        select:
+          options:
+            - label: "System"
+              value: "system"
+            - label: "Gas"
+              value: "gas"
+            - label: "Heat Pump"
+              value: "heat_pump"
+      description: "Heat source to use: 'system' lets the system decide, 'gas' forces the furnace, 'heat_pump' forces the heat pump."
+      example: "'system', 'gas', 'heat_pump'"

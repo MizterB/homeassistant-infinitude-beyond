@@ -20,6 +20,7 @@ import pytest
 from infinitude.const import (
     Activity,
     FanMode,
+    HeatSource,
     HoldMode,
     HoldState,
     HVACMode,
@@ -95,6 +96,43 @@ async def test_odu_modulation(infinitude):
     # A unit type we don't read modulation from reports nothing.
     infinitude._status["odu"] = {"type": "ac2stg", "opstat": "60"}
     assert infinitude.system.odu_modulation is None
+
+
+async def test_equipment_status_slugs(infinitude):
+    # Known staging values map to slugs; opmode passes through.
+    infinitude._status["idu"] = {"opstat": "Stage 1"}
+    infinitude._status["odu"] = {"opstat": "Stage 3", "opmode": "heating"}
+    assert infinitude.system.furnace_status == "stage_1"
+    assert infinitude.system.heatpump_status == "stage_3"
+    assert infinitude.system.heatpump_mode == "heating"
+
+
+async def test_equipment_status_passthrough_and_absent(infinitude):
+    # A value we didn't account for is passed through verbatim.
+    infinitude._status["odu"] = {"opstat": "Turbo"}
+    assert infinitude.system.heatpump_status == "Turbo"
+    # No odu block -> nothing to report (sensor won't register).
+    infinitude._status.pop("odu", None)
+    assert infinitude.system.heatpump_status is None
+    assert infinitude.system.heatpump_mode is None
+
+
+async def test_heat_source_mapping(infinitude):
+    for cfg, slug in (("system", "system"), ("idu only", "gas"), ("odu only", "heat_pump")):
+        infinitude._config["heatsource"] = cfg
+        assert infinitude.system.heat_source == slug
+    # Unrecognized or missing config -> None (controlled set, no passthrough).
+    infinitude._config["heatsource"] = "mystery"
+    assert infinitude.system.heat_source is None
+    infinitude._config.pop("heatsource", None)
+    assert infinitude.system.heat_source is None
+
+
+async def test_set_heat_source_posts_config(infinitude):
+    await infinitude.system.set_heat_source(HeatSource.HEATPUMP)
+    posts = [p for p in infinitude.posts if p["path"] == "/api/config"]
+    assert posts, "expected a POST to /api/config"
+    assert posts[-1]["data"] == {"heatsource": "odu only"}
 
 
 async def test_zone_temperatures(infinitude):
