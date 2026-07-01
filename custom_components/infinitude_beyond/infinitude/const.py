@@ -40,6 +40,7 @@ class Activity(Enum):
     SLEEP = "sleep"
     WAKE = "wake"
     MANUAL = "manual"
+    VACATION = "vacation"
 
 
 class ActivityIndex(IntEnum):

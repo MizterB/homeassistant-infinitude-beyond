@@ -8,6 +8,9 @@ PRESET_SCHEDULE = "schedule"
 PRESET_WAKE = "wake"
 PRESET_HOLD = "hold"
 PRESET_HOLD_UNTIL = "hold_until"
+# Display-only: reported when a zone is under a system vacation, never offered
+# in preset_modes (vacation is controlled elsewhere).
+PRESET_VACATION = "vacation"
 
 # Map the old human-readable preset values to the new slugs so automations
 # calling climate.set_preset_mode with the previous names keep working.

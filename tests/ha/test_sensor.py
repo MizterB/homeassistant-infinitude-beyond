@@ -62,3 +62,25 @@ async def test_humidity_sensor_per_enabled_zone(hass, mock_infinitude, config_en
     assert len(humidity) == 2
     assert all(s.state == "42" for s in humidity)
     assert all(s.attributes.get("unit_of_measurement") == "%" for s in humidity)
+
+
+async def test_vacation_sensor_registers_and_reports_state(
+    hass, mock_infinitude, config_entry
+):
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    reg = er.async_get(hass)
+    vac = next(
+        (
+            e
+            for e in er.async_entries_for_config_entry(reg, config_entry.entry_id)
+            if e.translation_key == "vacation"
+        ),
+        None,
+    )
+    assert vac is not None
+    assert vac.unique_id == f"{config_entry.entry_id}_system_vacation"
+    # Fixture has vacat off -> disabled.
+    assert hass.states.get(vac.entity_id).state == "disabled"

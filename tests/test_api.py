@@ -135,6 +135,51 @@ async def test_set_heat_source_posts_config(infinitude):
     assert posts[-1]["data"] == {"heatsource": "odu only"}
 
 
+async def test_activity_current_recognizes_vacation(infinitude):
+    zstatus = next(z for z in infinitude._status["zones"]["zone"] if z["id"] == "1")
+    zstatus["currentActivity"] = "vacation"
+    assert infinitude.zones["1"].activity_current is Activity.VACATION
+
+
+async def test_vacation_state_disabled_when_off(infinitude):
+    assert infinitude.system.vacation_state == "disabled"
+
+
+async def test_vacation_state_from_window(infinitude):
+    # Fixture clock is 2024-01-15 08:00 (-05:00).
+    cfg = infinitude._config
+    cfg["vacat"] = "on"
+    cfg["vacstart"], cfg["vacend"] = (
+        "2024-01-01T00:00:00-05:00",
+        "2024-02-01T00:00:00-05:00",
+    )
+    assert infinitude.system.vacation_state == "active"
+    cfg["vacstart"], cfg["vacend"] = (
+        "2024-06-01T00:00:00-05:00",
+        "2024-07-01T00:00:00-05:00",
+    )
+    assert infinitude.system.vacation_state == "scheduled"
+    cfg["vacstart"], cfg["vacend"] = (
+        "2023-06-01T00:00:00-05:00",
+        "2023-07-01T00:00:00-05:00",
+    )
+    assert infinitude.system.vacation_state == "ended"
+
+
+async def test_vacation_state_active_via_zone_beats_stale_window(infinitude):
+    # A zone reporting the vacation activity means active even if the stored
+    # window looks past.
+    cfg = infinitude._config
+    cfg["vacat"] = "on"
+    cfg["vacstart"], cfg["vacend"] = (
+        "2023-01-01T00:00:00-05:00",
+        "2023-02-01T00:00:00-05:00",
+    )
+    zstatus = next(z for z in infinitude._status["zones"]["zone"] if z["id"] == "1")
+    zstatus["currentActivity"] = "vacation"
+    assert infinitude.system.vacation_state == "active"
+
+
 async def test_zone_temperatures(infinitude):
     zone = infinitude.zones["1"]
     assert zone.temperature_current == 70.0

@@ -77,3 +77,12 @@ async def test_set_heat_source_maps_slug_to_enum():
     entity.system.set_heat_source = AsyncMock()
     await entity.async_set_heat_source("heat_pump")
     entity.system.set_heat_source.assert_awaited_once_with(HeatSource.HEATPUMP)
+
+
+async def test_preset_mode_reports_vacation_but_not_selectable():
+    entity, zone = _make_entity()
+    zone.activity_current = Activity.VACATION
+    # Displayed as the current preset...
+    assert entity.preset_mode == "vacation"
+    # ...but never offered as a selectable option (control lives elsewhere).
+    assert "vacation" not in entity.preset_modes
