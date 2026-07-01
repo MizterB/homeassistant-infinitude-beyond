@@ -17,6 +17,7 @@ from custom_components.infinitude_beyond.const import (
 )
 from custom_components.infinitude_beyond.infinitude.const import (
     Activity,
+    HeatSource,
     HoldMode,
 )
 
@@ -69,3 +70,10 @@ async def test_set_preset_mode_legacy_hold_until():
     zone.set_hold_mode.assert_awaited_once_with(
         mode=HoldMode.UNTIL, activity=Activity.MANUAL
     )
+
+
+async def test_set_heat_source_maps_slug_to_enum():
+    entity, _zone = _make_entity()
+    entity.system.set_heat_source = AsyncMock()
+    await entity.async_set_heat_source("heat_pump")
+    entity.system.set_heat_source.assert_awaited_once_with(HeatSource.HEATPUMP)

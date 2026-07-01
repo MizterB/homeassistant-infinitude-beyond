@@ -35,6 +35,7 @@ from .const import (
 from .infinitude.const import (
     Activity as InfActivity,
     FanMode as InfFanMode,
+    HeatSource as InfHeatSource,
     HoldMode as InfHoldMode,
     HVACAction as InfHVACAction,
     HVACMode as InfHVACMode,
@@ -48,6 +49,8 @@ ATTR_HOLD_ACTIVITY = "activity"
 ATTR_HOLD_MODE = "mode"
 ATTR_HOLD_UNTIL = "until"
 SERVICE_SET_HOLD_MODE = "set_hold_mode"
+ATTR_HEAT_SOURCE = "heat_source"
+SERVICE_SET_HEAT_SOURCE = "set_heat_source"
 
 
 async def async_setup_entry(
@@ -82,6 +85,12 @@ async def async_setup_entry(
             ),
         },
         "async_set_hold_mode",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_HEAT_SOURCE,
+        {vol.Required(ATTR_HEAT_SOURCE): vol.In([hs.value for hs in InfHeatSource])},
+        "async_set_heat_source",
     )
 
 
@@ -371,3 +380,8 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         await self.zone.set_hold_mode(
             mode=hold_mode, activity=hold_activity, until=hold_until
         )
+
+    async def async_set_heat_source(self, heat_source):
+        """Set the heat source for a dual-fuel system."""
+        source = next((hs for hs in InfHeatSource if hs.value == heat_source), None)
+        await self.system.set_heat_source(source)

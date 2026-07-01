@@ -120,6 +120,30 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         # Only a modulating outdoor unit reports this.
         exists_fn=lambda entity: entity.system.odu_modulation is not None,
     ),
+    InfinitudeSensorDescription(
+        key="furnace_status",
+        translation_key="furnace_status",
+        value_fn=lambda entity: entity.system.furnace_status,
+        exists_fn=lambda entity: entity.system.furnace_status is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_status",
+        translation_key="heatpump_status",
+        value_fn=lambda entity: entity.system.heatpump_status,
+        exists_fn=lambda entity: entity.system.heatpump_status is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_mode",
+        translation_key="heatpump_mode",
+        value_fn=lambda entity: entity.system.heatpump_mode,
+        exists_fn=lambda entity: entity.system.heatpump_mode is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heat_source",
+        translation_key="heat_source",
+        value_fn=lambda entity: entity.system.heat_source,
+        exists_fn=lambda entity: entity.system.heat_source is not None,
+    ),
 )
 
 ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
@@ -222,6 +246,18 @@ class InfinitudeSensorEntity(InfinitudeEntity, SensorEntity):
         """Set up the instance."""
         self.entity_description = entity_description
         super().__init__(coordinator, zone_id)
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique id.
+
+        Translated sensors key on the stable description key rather than the
+        base class's name, which would otherwise vary with the display language.
+        """
+        if self.entity_description.translation_key:
+            scope = f"zone_{self.zone.id}" if self.zone else "system"
+            return f"{self._id_base}_{scope}_{self.entity_description.key}"
+        return super().unique_id
 
     @property
     def native_value(self) -> StateType:
