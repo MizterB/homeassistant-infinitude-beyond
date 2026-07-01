@@ -662,6 +662,11 @@ class InfinitudeSystem:
         return str(self._config.get("vacat", "off")).lower() == "on"
 
     @property
+    def vacation_active(self) -> bool:
+        """Whether vacation is currently in effect."""
+        return self.vacation_state == "active"
+
+    @property
     def vacation_start(self) -> datetime | None:
         """Configured vacation start."""
         return self._vacation_datetime(self._config.get("vacstart"))

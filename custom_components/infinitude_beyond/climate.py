@@ -316,8 +316,10 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     def preset_mode(self):
         """Return current preset mode."""
         # A running system vacation drives the zone regardless of hold state.
+        # Keyed on the config-derived state so it reflects immediately, rather
+        # than waiting for the thermostat to report currentActivity=vacation.
         # Display-only: PRESET_VACATION is intentionally absent from preset_modes.
-        if self.zone.activity_current == InfActivity.VACATION:
+        if self.system.vacation_active:
             return PRESET_VACATION
         # If hold is off, preset should reflect the effective current activity when available.
         # This avoids showing "Scheduled activity" (graph) or an out-of-date scheduled activity

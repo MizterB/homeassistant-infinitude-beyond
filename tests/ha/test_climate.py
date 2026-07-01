@@ -37,8 +37,9 @@ def _make_entity():
     coordinator = MagicMock()
     coordinator.infinitude.zones = {"1": zone}
     entity = InfinitudeClimate(coordinator, "1")
-    # No vacation in play for these unit tests (skip the behavior-C branch).
+    # No vacation in play for these unit tests (skip behavior-C / vacation preset).
     entity.system.vacation_enabled = False
+    entity.system.vacation_active = False
     entity.system.set_vacation = AsyncMock()
     return entity, zone
 
@@ -89,8 +90,8 @@ async def test_set_heat_source_maps_slug_to_enum():
 
 
 async def test_preset_mode_reports_vacation_but_not_selectable():
-    entity, zone = _make_entity()
-    zone.activity_current = Activity.VACATION
+    entity, _zone = _make_entity()
+    entity.system.vacation_active = True
     # Displayed as the current preset...
     assert entity.preset_mode == "vacation"
     # ...but never offered as a selectable option (control lives elsewhere).
