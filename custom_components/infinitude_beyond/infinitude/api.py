@@ -327,22 +327,22 @@ class InfinitudeSystem:
     @property
     def _config(self) -> dict:
         """Raw Infinitude config data for the system."""
-        return self._infinitude._config
+        return self._infinitude._config or {}
 
     @property
     def _status(self) -> dict:
         """Raw Infinitude status data for the system."""
-        return self._infinitude._status
+        return self._infinitude._status or {}
 
     @property
     def _energy(self) -> dict:
         """Raw Infinitude energy data for the system."""
-        return self._infinitude._energy
+        return self._infinitude._energy or {}
 
     @property
     def _profile(self) -> dict:
         """Raw Infinitude profile data for the system."""
-        return self._infinitude._profile
+        return self._infinitude._profile or {}
 
     @property
     def brand(self) -> str | None:
@@ -673,7 +673,7 @@ class InfinitudeZone:
     @property
     def _config(self) -> dict:
         """Raw Infinitude config data for the zone."""
-        all_zones = self._infinitude._config.get("zones", {}).get("zone", [])
+        all_zones = (self._infinitude._config or {}).get("zones", {}).get("zone", [])
         zone_config = next(
             (zone for zone in all_zones if zone.get("id") == self.id), {}
         )
@@ -682,7 +682,7 @@ class InfinitudeZone:
     @property
     def _status(self) -> dict:
         """Raw Infinitude status data for the zone."""
-        all_zones = self._infinitude._status.get("zones", {}).get("zone", [])
+        all_zones = (self._infinitude._status or {}).get("zones", {}).get("zone", [])
         zone_status = next(
             (zone for zone in all_zones if zone.get("id") == self.id), {}
         )

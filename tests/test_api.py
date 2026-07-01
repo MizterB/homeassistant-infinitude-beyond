@@ -128,6 +128,16 @@ async def test_heat_source_mapping(infinitude):
     assert infinitude.system.heat_source is None
 
 
+async def test_properties_tolerate_missing_payloads(infinitude):
+    # An empty /api/status (or config) must not crash the entities.
+    infinitude._status = None
+    infinitude._config = None
+    assert infinitude.system.humidifier_state is None
+    assert infinitude.system.temperature_outside is None
+    assert infinitude.system.vacation_state == "disabled"
+    assert infinitude.zones["1"].temperature_current is None
+
+
 async def test_set_heat_source_posts_config(infinitude):
     await infinitude.system.set_heat_source(HeatSource.HEATPUMP)
     posts = [p for p in infinitude.posts if p["path"] == "/api/config"]
