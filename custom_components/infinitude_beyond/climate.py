@@ -309,6 +309,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
             PRESET_WAKE,
             PRESET_HOLD,
             PRESET_HOLD_UNTIL,
+            PRESET_VACATION,
         ]
         return modes
 
@@ -318,7 +319,6 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         # A running system vacation drives the zone regardless of hold state.
         # Keyed on the config-derived state so it reflects immediately, rather
         # than waiting for the thermostat to report currentActivity=vacation.
-        # Display-only: PRESET_VACATION is intentionally absent from preset_modes.
         if self.system.vacation_active:
             return PRESET_VACATION
         # If hold is off, preset should reflect the effective current activity when available.
@@ -359,7 +359,10 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         _LOGGER.debug("Set preset mode: %s", preset_mode)
         # Accept the pre-slug preset names so older automations keep working.
         preset_mode = LEGACY_PRESET_ALIASES.get(preset_mode, preset_mode)
-        # Picking any zone preset while a system vacation is on ends the
+        if preset_mode == PRESET_VACATION:
+            await self.system.set_vacation(enabled=True)
+            return
+        # Picking any other preset while a system vacation is on ends the
         # vacation first, so the choice takes effect instead of being overridden.
         if self.system.vacation_enabled:
             await self.system.set_vacation(enabled=False)

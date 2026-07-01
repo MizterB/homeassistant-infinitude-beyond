@@ -89,13 +89,22 @@ async def test_set_heat_source_maps_slug_to_enum():
     entity.system.set_heat_source.assert_awaited_once_with(HeatSource.HEATPUMP)
 
 
-async def test_preset_mode_reports_vacation_but_not_selectable():
+async def test_preset_mode_reports_vacation():
     entity, _zone = _make_entity()
     entity.system.vacation_active = True
-    # Displayed as the current preset...
     assert entity.preset_mode == "vacation"
-    # ...but never offered as a selectable option (control lives elsewhere).
-    assert "vacation" not in entity.preset_modes
+
+
+def test_vacation_preset_is_offered_last():
+    entity, _zone = _make_entity()
+    assert "vacation" in entity.preset_modes
+    assert entity.preset_modes[-1] == "vacation"
+
+
+async def test_selecting_vacation_preset_enables_vacation():
+    entity, _zone = _make_entity()
+    await entity.async_set_preset_mode("vacation")
+    entity.system.set_vacation.assert_awaited_once_with(enabled=True)
 
 
 async def test_zone_preset_change_exits_vacation():
