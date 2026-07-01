@@ -13,6 +13,7 @@ Tests are grouped into:
 from __future__ import annotations
 
 import logging
+import re
 from datetime import timedelta
 
 import infinitude.api as api_module
@@ -140,9 +141,7 @@ async def test_properties_tolerate_missing_payloads(infinitude):
 
 async def test_set_heat_source_posts_config(infinitude):
     await infinitude.system.set_heat_source(HeatSource.HEATPUMP)
-    posts = [p for p in infinitude.posts if p["path"] == "/api/config"]
-    assert posts, "expected a POST to /api/config"
-    assert posts[-1]["data"] == {"heatsource": "odu only"}
+    assert _last_config_post(infinitude)["heatsource"] == ["odu only"]
 
 
 async def test_activity_current_recognizes_vacation(infinitude):
@@ -191,34 +190,58 @@ async def test_vacation_state_active_via_zone_beats_stale_window(infinitude):
 
 
 def _last_config_post(infinitude):
-    return [p for p in infinitude.posts if p["path"] == "/api/config"][-1]["data"]
+    """Config the integration posted via the full-document save."""
+    posts = [p for p in infinitude.posts if p["path"] == "/systems/infinitude"]
+    return posts[-1]["json"]["system"][0]["config"][0]
 
 
-async def test_set_vacation_enable_defaults_stale_window(infinitude):
+def _capture_changes(infinitude, monkeypatch):
+    """Capture the changes dict passed to modify_config."""
+    captured: dict = {}
+
+    async def fake(changes):
+        captured.update(changes)
+
+    monkeypatch.setattr(infinitude, "modify_config", fake)
+    return captured
+
+
+async def test_modify_config_posts_full_systems_document(infinitude):
+    # The field change is applied onto the whole systems doc and posted back.
+    await infinitude.modify_config({"mode": "cool"})
+    assert _last_config_post(infinitude)["mode"] == ["cool"]
+
+
+async def test_set_hvac_mode_writes_config(infinitude):
+    await infinitude.system.set_hvac_mode(HVACMode.COOL)
+    assert _last_config_post(infinitude)["mode"] == ["cool"]
+
+
+async def test_set_vacation_enable_defaults_stale_window(infinitude, monkeypatch):
     # Stale placeholder window -> enabling installs a fresh one.
     infinitude._config["vacstart"] = "2012-01-1T21:00:00-00:00"
     infinitude._config["vacend"] = "2013-01-1T21:00:00-00:00"
+    changes = _capture_changes(infinitude, monkeypatch)
     await infinitude.system.set_vacation(enabled=True)
-    post = _last_config_post(infinitude)
-    assert post["vacat"] == "on"
-    assert "vacstart" in post and "vacend" in post
+    assert changes["vacat"] == "on"
+    # Short write format: no seconds, no offset.
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", changes["vacstart"])
+    assert "vacend" in changes
 
 
-async def test_set_vacation_keeps_valid_future_window(infinitude):
+async def test_set_vacation_keeps_valid_future_window(infinitude, monkeypatch):
     # A valid future window (fixture clock is 2024-01-15) is left untouched.
     infinitude._config["vacstart"] = "2024-06-01T00:00:00-05:00"
     infinitude._config["vacend"] = "2024-07-01T00:00:00-05:00"
+    changes = _capture_changes(infinitude, monkeypatch)
     await infinitude.system.set_vacation(enabled=True)
-    assert _last_config_post(infinitude) == {"vacat": "on"}
+    assert changes == {"vacat": "on"}
 
 
-async def test_set_vacation_writes_setpoints_and_fan(infinitude):
+async def test_set_vacation_writes_setpoints_and_fan(infinitude, monkeypatch):
+    changes = _capture_changes(infinitude, monkeypatch)
     await infinitude.system.set_vacation(heat=60, cool=80, fan=FanMode.LOW)
-    assert _last_config_post(infinitude) == {
-        "vacmint": "60.0",
-        "vacmaxt": "80.0",
-        "vacfan": "low",
-    }
+    assert changes == {"vacmint": "60.0", "vacmaxt": "80.0", "vacfan": "low"}
 
 
 async def test_vacation_setpoints_parse_float_strings(infinitude):
@@ -228,9 +251,10 @@ async def test_vacation_setpoints_parse_float_strings(infinitude):
     assert infinitude.system.vacation_cool == 90.0
 
 
-async def test_set_vacation_disable(infinitude):
+async def test_set_vacation_disable(infinitude, monkeypatch):
+    changes = _capture_changes(infinitude, monkeypatch)
     await infinitude.system.set_vacation(enabled=False)
-    assert _last_config_post(infinitude) == {"vacat": "off"}
+    assert changes == {"vacat": "off"}
 
 
 async def test_zone_temperatures(infinitude):
