@@ -2,7 +2,19 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
+from custom_components.infinitude_beyond.sensor import ZONE_SENSORS
 from homeassistant.helpers import entity_registry as er
+
+
+def test_occupancy_sensor_gated_on_value():
+    desc = next(d for d in ZONE_SENSORS if d.key == "occupancy")
+    entity = MagicMock()
+    entity.zone.occupancy = None
+    assert desc.exists_fn(entity) is False
+    entity.zone.occupancy = "occupied"
+    assert desc.exists_fn(entity) is True
 
 
 async def test_modulation_sensors_only_register_when_reported(
