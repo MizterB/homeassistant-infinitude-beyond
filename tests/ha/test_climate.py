@@ -23,6 +23,8 @@ from custom_components.infinitude_beyond.infinitude.const import (
     FanMode,
     HeatSource,
     HoldMode,
+    HVACAction as InfHVACAction,
+    HVACMode as InfHVACMode,
 )
 from homeassistant.components.climate import HVACMode
 
@@ -87,6 +89,24 @@ async def test_set_heat_source_maps_slug_to_enum():
     entity.system.set_heat_source = AsyncMock()
     await entity.async_set_heat_source("heat_pump")
     entity.system.set_heat_source.assert_awaited_once_with(HeatSource.HEATPUMP)
+
+
+@pytest.mark.parametrize(
+    "action,attr,value",
+    [
+        (InfHVACAction.ACTIVE_COOL, "temperature_cool", 75.0),
+        (InfHVACAction.ACTIVE_HEAT, "temperature_heat", 68.0),
+    ],
+    ids=["cool", "heat"],
+)
+def test_target_temperature_in_auto_uses_zone_setpoint(action, attr, value):
+    # #72: the Auto branch referenced a nonexistent self.setpoint_* and crashed
+    # whenever a zone in Auto was actively heating/cooling.
+    entity, zone = _make_entity()
+    zone.hvac_mode = InfHVACMode.AUTO
+    zone.hvac_action = action
+    setattr(zone, attr, value)
+    assert entity.target_temperature == value
 
 
 async def test_preset_mode_reports_vacation():
