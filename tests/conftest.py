@@ -87,6 +87,16 @@ def _build_app(payloads: dict, posts: list) -> web.Application:
         await record(request)
         return web.json_response({})
 
+    async def systems(_):
+        # The full systems document, as /systems.json serves it.
+        cfg = payloads["config"].get("data", payloads["config"])
+        return web.json_response({"system": [{"config": [cfg]}]})
+
+    async def post_systems(request):
+        # Config saves post the whole doc here as JSON.
+        posts.append({"path": request.path, "json": await request.json()})
+        return web.Response(text="")
+
     async def fail(_):
         # A failing GET, for the connection-error path (issue #20).
         return web.Response(status=500)
@@ -96,9 +106,11 @@ def _build_app(payloads: dict, posts: list) -> web.Application:
     app.router.add_get("/api/config/", config)
     app.router.add_get("/energy.json", energy)
     app.router.add_get("/profile.json", profile)
+    app.router.add_get("/systems.json", systems)
     app.router.add_get("/api/fail", fail)
     app.router.add_post("/api/config", post_config)
     app.router.add_post("/api/empty-test", post_empty)
+    app.router.add_post("/systems/infinitude", post_systems)
     app.router.add_post("/api/{zone}/activity/{activity}", post_json)
     app.router.add_post("/api/{zone}/hold", post_json)
     return app

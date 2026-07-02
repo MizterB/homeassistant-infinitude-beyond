@@ -56,6 +56,14 @@ def _opstat_slug(value) -> str | None:
     return _OPSTAT_SLUGS.get(str(value).strip().lower(), str(value))
 
 
+def _vacation_datetime_str(dt: datetime) -> str:
+    """Format a vacation timestamp the way Infinitude's UI writes it.
+
+    Local wall-clock, minute precision, no offset (e.g. 2026-07-01T10:00).
+    """
+    return dt.strftime("%Y-%m-%dT%H:%M")
+
+
 class Infinitude:
     """Object for interacting with the Infinitude API."""
 
@@ -134,14 +142,55 @@ class Infinitude:
                 stripped = text.strip()
                 if stripped:
                     try:
-                        return json.loads(stripped)
+                        result = json.loads(stripped)
                     except ValueError:
-                        pass
+                        result = None
+                    if result is not None:
+                        if (
+                            isinstance(result, dict)
+                            and result.get("status") == "fail"
+                        ):
+                            _LOGGER.warning(
+                                "Infinitude reported a failed write to %s: %s",
+                                endpoint,
+                                result,
+                            )
+                        return result
                 # Empty or non-JSON body: the request still succeeded.
                 self._warn_non_json_post(endpoint)
                 return None
         except ClientError as e:
             _LOGGER.error(e)
+
+    async def _post_json(self, endpoint: str, payload: dict) -> None:
+        """POST a JSON body (used for saving the full systems document)."""
+        url = f"{self.url}{endpoint}"
+        try:
+            _LOGGER.debug("POST(json) %s with %s", url, payload)
+            async with self._session.post(url, json=payload) as resp:
+                resp.raise_for_status()
+        except ClientError as e:
+            _LOGGER.error("POST %s failed: %s", url, e)
+            raise ConnectionError from e
+
+    async def modify_config(self, changes: dict) -> None:
+        """Change system config fields the way the Infinitude UI does.
+
+        Field-level POSTs to /api/config are rejected by current Infinitude
+        (they return {"status":"fail"}). The UI saves by posting the whole
+        systems document to /systems/infinitude, so mirror that: pull the doc,
+        set the fields on its config, post it back.
+        """
+        doc = await self._get("/systems.json")
+        try:
+            system = doc["system"][0]
+            config = system["config"][0]
+        except (KeyError, IndexError, TypeError) as err:
+            raise ConnectionError("Unexpected systems document") from err
+        for key, value in changes.items():
+            config[key] = [value]
+        await self._post_json("/systems/infinitude", {"system": [system]})
+        await self.update()
 
     def _warn_non_json_post(self, endpoint: str) -> None:
         """Log once that Infinitude sent an empty or non-JSON POST response."""
@@ -473,10 +522,7 @@ class InfinitudeSystem:
 
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
-
-        endpoint = "/api/config"
-        data = {"mode": f"{hvac_mode.value}"}
-        await self._infinitude._post(endpoint, data)
+        await self._infinitude.modify_config({"mode": hvac_mode.value})
 
     @property
     def filter_level(self) -> int | None:
@@ -622,9 +668,9 @@ class InfinitudeSystem:
 
     async def set_heat_source(self, heatsource: HeatSource) -> None:
         """Set the heat source for a dual-fuel system."""
-        data = {"heatsource": _HEAT_SOURCE_TO_CONFIG[heatsource]}
-        await self._infinitude._post("/api/config", data)
-        await self._infinitude.update()
+        await self._infinitude.modify_config(
+            {"heatsource": _HEAT_SOURCE_TO_CONFIG[heatsource]}
+        )
 
     @property
     def energy(self) -> dict | None:
@@ -638,12 +684,16 @@ class InfinitudeSystem:
         """Parse a vacation window timestamp, tolerating single-digit fields."""
         if not isinstance(value, str):
             return None
-        matches = match(r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})", value)
+        matches = match(
+            r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2})(?::(\d{2}))?", value
+        )
         if not matches:
             return None
+        year, month, day, hour, minute = (int(g) for g in matches.groups()[:5])
+        second = int(matches.group(6) or 0)
         try:
             return datetime(
-                *(int(g) for g in matches.groups()), tzinfo=self.local_timezone
+                year, month, day, hour, minute, second, tzinfo=self.local_timezone
             )
         except ValueError:
             return None
@@ -718,44 +768,42 @@ class InfinitudeSystem:
         """Write vacation config in a single request.
 
         When enabling without an explicit window (or with a stale/past one),
-        default to now .. now+7 days.
+        default to the next quarter hour .. seven days later.
         """
-        # Write local wall-clock: reads ignore the stored offset and apply the
-        # system timezone, so the written value must be in that same frame.
+        # Write local wall-clock: reads apply the system timezone, so the
+        # written value must be in that same frame.
         tz = self.local_timezone
         if start is not None:
             start = start.replace(tzinfo=tz) if start.tzinfo is None else start.astimezone(tz)
         if end is not None:
             end = end.replace(tzinfo=tz) if end.tzinfo is None else end.astimezone(tz)
 
-        data: dict = {}
+        changes: dict = {}
         if enabled is not None:
-            data["vacat"] = "on" if enabled else "off"
+            changes["vacat"] = "on" if enabled else "off"
         if start is not None:
-            data["vacstart"] = start.replace(microsecond=0).isoformat()
+            changes["vacstart"] = _vacation_datetime_str(start)
         if end is not None:
-            data["vacend"] = end.replace(microsecond=0).isoformat()
+            changes["vacend"] = _vacation_datetime_str(end)
         if heat is not None:
-            data["vacmint"] = str(float(heat))
+            changes["vacmint"] = str(float(heat))
         if cool is not None:
-            data["vacmaxt"] = str(float(cool))
+            changes["vacmaxt"] = str(float(cool))
         if fan is not None:
-            data["vacfan"] = fan.value
+            changes["vacfan"] = fan.value
 
-        if data.get("vacat") == "on" and start is None and end is None:
+        if changes.get("vacat") == "on" and start is None and end is None:
             now = self.local_time
             cur_start, cur_end = self.vacation_start, self.vacation_end
             if not cur_start or not cur_end or (now and cur_end <= now):
-                base = (now or datetime.now(tz=self.local_timezone)).replace(
-                    minute=0, second=0, microsecond=0
-                )
-                data["vacstart"] = base.isoformat()
-                data["vacend"] = (base + timedelta(days=7)).isoformat()
+                base = (now or datetime.now(tz=tz)).replace(second=0, microsecond=0)
+                base += timedelta(minutes=(15 - base.minute % 15) % 15 or 15)
+                changes["vacstart"] = _vacation_datetime_str(base)
+                changes["vacend"] = _vacation_datetime_str(base + timedelta(days=7))
 
-        if not data:
+        if not changes:
             return
-        await self._infinitude._post("/api/config", data)
-        await self._infinitude.update()
+        await self._infinitude.modify_config(changes)
 
 
 class InfinitudeZone:
