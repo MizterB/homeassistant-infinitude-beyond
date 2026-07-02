@@ -11,9 +11,66 @@
               "sleep": "Sleep",
               "wake": "Wake",
               "hold": "Hold indefinitely",
-              "hold_until": "Hold until next activity"
+              "hold_until": "Hold until next activity",
+              "vacation": "Vacation"
             }
           }
+        }
+      }
+    },
+    "datetime": {
+      "vacation_start": {
+        "name": "Vacation start"
+      },
+      "vacation_end": {
+        "name": "Vacation end"
+      }
+    },
+    "sensor": {
+      "vacation": {
+        "name": "Vacation",
+        "state": {
+          "disabled": "Disabled",
+          "scheduled": "Scheduled",
+          "active": "Active",
+          "ended": "Ended"
+        }
+      },
+      "furnace_status": {
+        "name": "Furnace status",
+        "state": {
+          "off": "Off",
+          "stage_1": "Stage 1",
+          "stage_2": "Stage 2",
+          "stage_3": "Stage 3",
+          "stage_4": "Stage 4",
+          "stage_5": "Stage 5",
+          "defrost": "Defrost",
+          "dehumidify": "Dehumidify"
+        }
+      },
+      "heatpump_status": {
+        "name": "Heat pump status",
+        "state": {
+          "off": "Off",
+          "stage_1": "Stage 1",
+          "stage_2": "Stage 2",
+          "stage_3": "Stage 3",
+          "stage_4": "Stage 4",
+          "stage_5": "Stage 5",
+          "defrost": "Defrost",
+          "dehumidify": "Dehumidify"
+        }
+      },
+      "heatpump_mode": {
+        "name": "Heat pump mode"
+      },
+      "heat_source": {
+        "name": "Heat source",
+        "state": {
+          "system": "System",
+          "gas": "Gas",
+          "heat_pump": "Heat Pump"
         }
       }
     }

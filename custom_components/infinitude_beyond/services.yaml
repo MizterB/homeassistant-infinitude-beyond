@@ -32,3 +32,73 @@ set_hold_mode:
             - "manual"
       description: "Name of the activity profile to hold with.  If not provided, defaults to the current activity."
       example: "'home', 'away', 'sleep', 'wake', 'manual'"
+
+set_heat_source:
+  description: Sets the heat source for a dual-fuel Infinitude system
+  target:
+    entity:
+      integration: infinitude_beyond
+      domain: climate
+  fields:
+    heat_source:
+      selector:
+        select:
+          options:
+            - label: "System"
+              value: "system"
+            - label: "Gas"
+              value: "gas"
+            - label: "Heat Pump"
+              value: "heat_pump"
+      description: "Heat source to use: 'system' lets the system decide, 'gas' forces the furnace, 'heat_pump' forces the heat pump."
+      example: "'system', 'gas', 'heat_pump'"
+
+set_vacation:
+  description: Configures the system vacation in a single request. Omitted fields are left unchanged; enabling without a window defaults to the next seven days.
+  target:
+    entity:
+      integration: infinitude_beyond
+      domain: climate
+  fields:
+    enabled:
+      selector:
+        boolean:
+      description: "Turn vacation on or off."
+    start:
+      selector:
+        datetime:
+      description: "Vacation start date and time."
+    end:
+      selector:
+        datetime:
+      description: "Vacation end date and time."
+    heat:
+      selector:
+        number:
+          min: 40
+          max: 90
+          mode: box
+      description: "Vacation heat (minimum) setpoint."
+    cool:
+      selector:
+        number:
+          min: 50
+          max: 99
+          mode: box
+      description: "Vacation cool (maximum) setpoint."
+    fan:
+      selector:
+        select:
+          options:
+            - "off"
+            - "low"
+            - "med"
+            - "high"
+      description: "Vacation fan setting."
+
+clear_vacation:
+  description: Turns off the system vacation.
+  target:
+    entity:
+      integration: infinitude_beyond
+      domain: climate

@@ -12,6 +12,7 @@ from aiohttp.client_exceptions import ClientError
 from .const import (
     Activity,
     FanMode,
+    HeatSource,
     HoldMode,
     HoldState,
     HumidifierState,
@@ -25,6 +26,42 @@ _LOGGER = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT: int = 30
 UPDATE_TIMEOUT: int = 30
+
+# Known equipment status values -> translation slugs. Unknown values pass
+# through as-is (see _opstat_slug).
+_OPSTAT_SLUGS = {
+    "off": "off",
+    "stage 1": "stage_1",
+    "stage 2": "stage_2",
+    "stage 3": "stage_3",
+    "stage 4": "stage_4",
+    "stage 5": "stage_5",
+    "defrost": "defrost",
+    "dehumidify": "dehumidify",
+}
+
+# Infinitude config <-> heat source slug.
+_HEAT_SOURCE_FROM_CONFIG = {
+    "system": HeatSource.SYSTEM,
+    "idu only": HeatSource.GAS,
+    "odu only": HeatSource.HEATPUMP,
+}
+_HEAT_SOURCE_TO_CONFIG = {v: k for k, v in _HEAT_SOURCE_FROM_CONFIG.items()}
+
+
+def _opstat_slug(value) -> str | None:
+    """Slug for a known staging status; the raw value for anything else."""
+    if value in (None, ""):
+        return None
+    return _OPSTAT_SLUGS.get(str(value).strip().lower(), str(value))
+
+
+def _vacation_datetime_str(dt: datetime) -> str:
+    """Format a vacation timestamp the way Infinitude's UI writes it.
+
+    Local wall-clock, minute precision, no offset (e.g. 2026-07-01T10:00).
+    """
+    return dt.strftime("%Y-%m-%dT%H:%M")
 
 
 class Infinitude:
@@ -77,7 +114,8 @@ class Infinitude:
                 resp.raise_for_status()
                 return await resp.json(content_type=None)
         except ClientError as e:
-            _LOGGER.error("GET %s failed: %s", url, e)
+            # Debug only: this fires every update cycle during an outage.
+            _LOGGER.debug("GET %s failed: %s", url, e)
             raise ConnectionError from e
 
     async def _post(self, endpoint: str, data: dict, **kwargs) -> dict | None:
@@ -104,14 +142,55 @@ class Infinitude:
                 stripped = text.strip()
                 if stripped:
                     try:
-                        return json.loads(stripped)
+                        result = json.loads(stripped)
                     except ValueError:
-                        pass
+                        result = None
+                    if result is not None:
+                        if (
+                            isinstance(result, dict)
+                            and result.get("status") == "fail"
+                        ):
+                            _LOGGER.warning(
+                                "Infinitude reported a failed write to %s: %s",
+                                endpoint,
+                                result,
+                            )
+                        return result
                 # Empty or non-JSON body: the request still succeeded.
                 self._warn_non_json_post(endpoint)
                 return None
         except ClientError as e:
             _LOGGER.error(e)
+
+    async def _post_json(self, endpoint: str, payload: dict) -> None:
+        """POST a JSON body (used for saving the full systems document)."""
+        url = f"{self.url}{endpoint}"
+        try:
+            _LOGGER.debug("POST(json) %s with %s", url, payload)
+            async with self._session.post(url, json=payload) as resp:
+                resp.raise_for_status()
+        except ClientError as e:
+            _LOGGER.error("POST %s failed: %s", url, e)
+            raise ConnectionError from e
+
+    async def modify_config(self, changes: dict) -> None:
+        """Change system config fields the way the Infinitude UI does.
+
+        Field-level POSTs to /api/config are rejected by current Infinitude
+        (they return {"status":"fail"}). The UI saves by posting the whole
+        systems document to /systems/infinitude, so mirror that: pull the doc,
+        set the fields on its config, post it back.
+        """
+        doc = await self._get("/systems.json")
+        try:
+            system = doc["system"][0]
+            config = system["config"][0]
+        except (KeyError, IndexError, TypeError) as err:
+            raise ConnectionError("Unexpected systems document") from err
+        for key, value in changes.items():
+            config[key] = [value]
+        await self._post_json("/systems/infinitude", {"system": [system]})
+        await self.update()
 
     def _warn_non_json_post(self, endpoint: str) -> None:
         """Log once that Infinitude sent an empty or non-JSON POST response."""
@@ -297,22 +376,31 @@ class InfinitudeSystem:
     @property
     def _config(self) -> dict:
         """Raw Infinitude config data for the system."""
-        return self._infinitude._config
+        return self._infinitude._config or {}
 
     @property
     def _status(self) -> dict:
         """Raw Infinitude status data for the system."""
-        return self._infinitude._status
+        return self._infinitude._status or {}
 
     @property
     def _energy(self) -> dict:
         """Raw Infinitude energy data for the system."""
-        return self._infinitude._energy
+        return self._infinitude._energy or {}
 
     @property
     def _profile(self) -> dict:
         """Raw Infinitude profile data for the system."""
-        return self._infinitude._profile
+        return self._infinitude._profile or {}
+
+    @property
+    def connected(self) -> bool:
+        """Whether Infinitude is returning live thermostat data.
+
+        An empty status means Infinitude is reachable but the thermostat isn't
+        reporting to it.
+        """
+        return bool(self._status)
 
     @property
     def brand(self) -> str | None:
@@ -434,10 +522,7 @@ class InfinitudeSystem:
 
     async def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
-
-        endpoint = "/api/config"
-        data = {"mode": f"{hvac_mode.value}"}
-        await self._infinitude._post(endpoint, data)
+        await self._infinitude.modify_config({"mode": hvac_mode.value})
 
     @property
     def filter_level(self) -> int | None:
@@ -548,12 +633,177 @@ class InfinitudeSystem:
         return None
 
     @property
+    def furnace_status(self) -> str | None:
+        """Indoor unit operating status."""
+        idu = self._status.get("idu")
+        if not idu:
+            return None
+        return _opstat_slug(idu.get("opstat"))
+
+    @property
+    def heatpump_status(self) -> str | None:
+        """Outdoor unit operating status (heat pump stage)."""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        return _opstat_slug(odu.get("opstat"))
+
+    @property
+    def heatpump_mode(self) -> str | None:
+        """Outdoor unit operating mode."""
+        odu = self._status.get("odu")
+        if not odu:
+            return None
+        val = odu.get("opmode")
+        return str(val) if val else None
+
+    @property
+    def heat_source(self) -> str | None:
+        """Configured heat source for dual-fuel systems."""
+        hs = self._config.get("heatsource")
+        if not hs:
+            return None
+        mapped = _HEAT_SOURCE_FROM_CONFIG.get(str(hs).strip().lower())
+        return mapped.value if mapped else None
+
+    async def set_heat_source(self, heatsource: HeatSource) -> None:
+        """Set the heat source for a dual-fuel system."""
+        await self._infinitude.modify_config(
+            {"heatsource": _HEAT_SOURCE_TO_CONFIG[heatsource]}
+        )
+
+    @property
     def energy(self) -> dict | None:
         """Energy data."""
         if isinstance(self._energy, dict) and self._energy != {}:
             return self._energy
         else:
             return None
+
+    def _vacation_datetime(self, value) -> datetime | None:
+        """Parse a vacation window timestamp, tolerating single-digit fields."""
+        if not isinstance(value, str):
+            return None
+        matches = match(
+            r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2})(?::(\d{2}))?", value
+        )
+        if not matches:
+            return None
+        year, month, day, hour, minute = (int(g) for g in matches.groups()[:5])
+        second = int(matches.group(6) or 0)
+        try:
+            return datetime(
+                year, month, day, hour, minute, second, tzinfo=self.local_timezone
+            )
+        except ValueError:
+            return None
+
+    @property
+    def vacation_state(self) -> str:
+        """Derived vacation state: disabled, scheduled, active, or ended."""
+        if str(self._config.get("vacat", "off")).lower() != "on":
+            return "disabled"
+        zones = self._infinitude.zones or {}
+        if any(z.activity_current == Activity.VACATION for z in zones.values()):
+            return "active"
+        now = self.local_time
+        start = self._vacation_datetime(self._config.get("vacstart"))
+        end = self._vacation_datetime(self._config.get("vacend"))
+        if now and start and now < start:
+            return "scheduled"
+        if now and end and now >= end:
+            return "ended"
+        return "active"
+
+    @property
+    def vacation_enabled(self) -> bool:
+        """Whether vacation is enabled in config."""
+        return str(self._config.get("vacat", "off")).lower() == "on"
+
+    @property
+    def vacation_active(self) -> bool:
+        """Whether vacation is currently in effect."""
+        return self.vacation_state == "active"
+
+    @property
+    def vacation_start(self) -> datetime | None:
+        """Configured vacation start."""
+        return self._vacation_datetime(self._config.get("vacstart"))
+
+    @property
+    def vacation_end(self) -> datetime | None:
+        """Configured vacation end."""
+        return self._vacation_datetime(self._config.get("vacend"))
+
+    @property
+    def vacation_heat(self) -> float | None:
+        """Vacation heat (minimum) setpoint."""
+        val = self._config.get("vacmint")
+        return float(val) if val not in (None, "") else None
+
+    @property
+    def vacation_cool(self) -> float | None:
+        """Vacation cool (maximum) setpoint."""
+        val = self._config.get("vacmaxt")
+        return float(val) if val not in (None, "") else None
+
+    @property
+    def vacation_fan(self) -> FanMode | None:
+        """Vacation fan mode."""
+        val = self._config.get("vacfan")
+        if not val:
+            return None
+        return next((f for f in FanMode if f.value == val), None)
+
+    async def set_vacation(
+        self,
+        *,
+        enabled: bool | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        heat: int | None = None,
+        cool: int | None = None,
+        fan: FanMode | None = None,
+    ) -> None:
+        """Write vacation config in a single request.
+
+        When enabling without an explicit window (or with a stale/past one),
+        default to the next quarter hour .. seven days later.
+        """
+        # Write local wall-clock: reads apply the system timezone, so the
+        # written value must be in that same frame.
+        tz = self.local_timezone
+        if start is not None:
+            start = start.replace(tzinfo=tz) if start.tzinfo is None else start.astimezone(tz)
+        if end is not None:
+            end = end.replace(tzinfo=tz) if end.tzinfo is None else end.astimezone(tz)
+
+        changes: dict = {}
+        if enabled is not None:
+            changes["vacat"] = "on" if enabled else "off"
+        if start is not None:
+            changes["vacstart"] = _vacation_datetime_str(start)
+        if end is not None:
+            changes["vacend"] = _vacation_datetime_str(end)
+        if heat is not None:
+            changes["vacmint"] = str(float(heat))
+        if cool is not None:
+            changes["vacmaxt"] = str(float(cool))
+        if fan is not None:
+            changes["vacfan"] = fan.value
+
+        if changes.get("vacat") == "on" and start is None and end is None:
+            now = self.local_time
+            cur_start, cur_end = self.vacation_start, self.vacation_end
+            if not cur_start or not cur_end or (now and cur_end <= now):
+                base = (now or datetime.now(tz=tz)).replace(second=0, microsecond=0)
+                base += timedelta(minutes=(15 - base.minute % 15) % 15 or 15)
+                changes["vacstart"] = _vacation_datetime_str(base)
+                changes["vacend"] = _vacation_datetime_str(base + timedelta(days=7))
+
+        if not changes:
+            return
+        await self._infinitude.modify_config(changes)
 
 
 class InfinitudeZone:
@@ -572,7 +822,7 @@ class InfinitudeZone:
     @property
     def _config(self) -> dict:
         """Raw Infinitude config data for the zone."""
-        all_zones = self._infinitude._config.get("zones", {}).get("zone", [])
+        all_zones = (self._infinitude._config or {}).get("zones", {}).get("zone", [])
         zone_config = next(
             (zone for zone in all_zones if zone.get("id") == self.id), {}
         )
@@ -581,7 +831,7 @@ class InfinitudeZone:
     @property
     def _status(self) -> dict:
         """Raw Infinitude status data for the zone."""
-        all_zones = self._infinitude._status.get("zones", {}).get("zone", [])
+        all_zones = (self._infinitude._status or {}).get("zones", {}).get("zone", [])
         zone_status = next(
             (zone for zone in all_zones if zone.get("id") == self.id), {}
         )

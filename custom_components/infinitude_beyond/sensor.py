@@ -8,6 +8,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTemperature
@@ -120,6 +121,35 @@ SYSTEM_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         # Only a modulating outdoor unit reports this.
         exists_fn=lambda entity: entity.system.odu_modulation is not None,
     ),
+    InfinitudeSensorDescription(
+        key="furnace_status",
+        translation_key="furnace_status",
+        value_fn=lambda entity: entity.system.furnace_status,
+        exists_fn=lambda entity: entity.system.furnace_status is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_status",
+        translation_key="heatpump_status",
+        value_fn=lambda entity: entity.system.heatpump_status,
+        exists_fn=lambda entity: entity.system.heatpump_status is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heatpump_mode",
+        translation_key="heatpump_mode",
+        value_fn=lambda entity: entity.system.heatpump_mode,
+        exists_fn=lambda entity: entity.system.heatpump_mode is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="heat_source",
+        translation_key="heat_source",
+        value_fn=lambda entity: entity.system.heat_source,
+        exists_fn=lambda entity: entity.system.heat_source is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="vacation",
+        translation_key="vacation",
+        value_fn=lambda entity: entity.system.vacation_state,
+    ),
 )
 
 ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
@@ -183,6 +213,17 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         key="occupancy",
         name="Occupancy",
         value_fn=lambda entity: entity.zone.occupancy,
+        # Only zones with an occupancy sensor report this; skip the rest.
+        exists_fn=lambda entity: entity.zone.occupancy is not None,
+    ),
+    InfinitudeSensorDescription(
+        key="humidity_current",
+        name="Humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="%",
+        value_fn=lambda entity: entity.zone.humidity_current,
+        exists_fn=lambda entity: entity.zone.humidity_current is not None,
     ),
 )
 
@@ -222,6 +263,18 @@ class InfinitudeSensorEntity(InfinitudeEntity, SensorEntity):
         """Set up the instance."""
         self.entity_description = entity_description
         super().__init__(coordinator, zone_id)
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique id.
+
+        Translated sensors key on the stable description key rather than the
+        base class's name, which would otherwise vary with the display language.
+        """
+        if self.entity_description.translation_key:
+            scope = f"zone_{self.zone.id}" if self.zone else "system"
+            return f"{self._id_base}_{scope}_{self.entity_description.key}"
+        return super().unique_id
 
     @property
     def native_value(self) -> StateType:

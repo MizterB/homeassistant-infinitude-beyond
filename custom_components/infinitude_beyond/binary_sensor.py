@@ -5,10 +5,12 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -60,7 +62,10 @@ async def async_setup_entry(
 ) -> None:
     """Set up Infinitude binary sensors from config entry."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    entities = []
+    entities = [
+        InfinitudeConnectivityBinarySensorEntity(coordinator),
+        InfinitudeThermostatConnectivityBinarySensorEntity(coordinator),
+    ]
     for entity_description in SYSTEM_BINARY_SENSORS:
         entities.append(InfinitudeBinarySensorEntity(coordinator, entity_description))
     zones = [z for z in coordinator.infinitude.zones.values() if z.enabled]
@@ -98,3 +103,41 @@ class InfinitudeBinarySensorEntity(InfinitudeEntity, BinarySensorEntity):
         if self.entity_description.extra_state_attributes_fn is not None:
             return self.entity_description.extra_state_attributes_fn(self)
         return None
+
+
+class _InfinitudeConnectivityBase(InfinitudeEntity, BinarySensorEntity):
+    """Shared bits for the connectivity sensors.
+
+    Always available so they can actually report the disconnected state, which
+    a plain coordinator entity can't (it goes unavailable on a failed fetch).
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def available(self) -> bool:
+        """The connectivity sensor itself is always available."""
+        return True
+
+
+class InfinitudeConnectivityBinarySensorEntity(_InfinitudeConnectivityBase):
+    """Whether the integration can reach the Infinitude server."""
+
+    _attr_name = "Infinitude connectivity"
+
+    @property
+    def is_on(self) -> bool:
+        """True while the last fetch from Infinitude succeeded."""
+        return self.coordinator.last_update_success
+
+
+class InfinitudeThermostatConnectivityBinarySensorEntity(_InfinitudeConnectivityBase):
+    """Whether the HVAC system is reporting to Infinitude."""
+
+    _attr_name = "Thermostat connectivity"
+
+    @property
+    def is_on(self) -> bool:
+        """True when we have a fresh fetch and the thermostat is reporting."""
+        return self.coordinator.last_update_success and self.system.connected
