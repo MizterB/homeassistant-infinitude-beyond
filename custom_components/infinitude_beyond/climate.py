@@ -162,12 +162,12 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
                 InfHVACAction.ACTIVE_HEAT,
                 InfHVACAction.PREP_HEAT,
             ]:
-                return self.setpoint_heat
+                return self.zone.temperature_heat
             elif self.zone.hvac_action in [
                 InfHVACAction.ACTIVE_COOL,
                 InfHVACAction.PREP_COOL,
             ]:
-                return self.setpoint_cool
+                return self.zone.temperature_cool
             else:
                 return self.zone.temperature_current
 
