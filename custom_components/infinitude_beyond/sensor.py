@@ -213,6 +213,8 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
         key="occupancy",
         name="Occupancy",
         value_fn=lambda entity: entity.zone.occupancy,
+        # Only zones with an occupancy sensor report this; skip the rest.
+        exists_fn=lambda entity: entity.zone.occupancy is not None,
     ),
     InfinitudeSensorDescription(
         key="humidity_current",
