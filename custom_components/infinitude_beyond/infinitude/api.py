@@ -1114,9 +1114,11 @@ class InfinitudeZone:
     @property
     def activity_next(self) -> Activity | None:
         """Next scheduled activity."""
+        if not self._activity_next:
+            return None
         activity = next((a for a in Activity if a.value == self._activity_next), None)
         if activity is None:
-            _LOGGER.warning("'%s' is an unknown Next Activity", self._activity_next)
+            _LOGGER.debug("'%s' is an unknown Next Activity", self._activity_next)
         return activity
 
     @property

@@ -286,6 +286,19 @@ async def test_hold_off_by_default(infinitude):
     assert zone.hold_mode is HoldMode.OFF
 
 
+async def test_activity_next_missing_is_quiet(infinitude, caplog):
+    # A config with no upcoming activity would previously warn "'None' is an
+    # unknown Next Activity" on every coordinator refresh. Return None quietly
+    # to match activity_current / activity_scheduled.
+    zone = infinitude.zones["1"]
+    zone._activity_next = None
+    with caplog.at_level(logging.WARNING, logger="infinitude.api"):
+        assert zone.activity_next is None
+    assert not any(
+        "unknown Next Activity" in rec.message for rec in caplog.records
+    )
+
+
 async def test_set_temperature_posts_manual_activity(infinitude):
     await infinitude.zones["1"].set_temperature(temperature=72)
 

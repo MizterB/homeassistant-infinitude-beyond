@@ -201,7 +201,9 @@ ZONE_SENSORS: tuple[InfinitudeSensorDescription, ...] = (
     InfinitudeSensorDescription(
         key="hold_state",
         name="Hold state",
-        value_fn=lambda entity: entity.zone.hold_state.value,
+        value_fn=lambda entity: (
+            entity.zone.hold_state.value if entity.zone.hold_state else None
+        ),
     ),
     InfinitudeSensorDescription(
         key="hold_until",

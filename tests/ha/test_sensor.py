@@ -17,6 +17,20 @@ def test_occupancy_sensor_gated_on_value():
     assert desc.exists_fn(entity) is True
 
 
+def test_hold_state_sensor_tolerates_missing_hold():
+    # The 'hold' field is absent from the config document during some mode
+    # transitions; before the guard, the state write crashed with
+    # AttributeError: 'NoneType' object has no attribute 'value'.
+    from custom_components.infinitude_beyond.infinitude.const import HoldState
+
+    desc = next(d for d in ZONE_SENSORS if d.key == "hold_state")
+    entity = MagicMock()
+    entity.zone.hold_state = None
+    assert desc.value_fn(entity) is None
+    entity.zone.hold_state = HoldState.ON
+    assert desc.value_fn(entity) == "on"
+
+
 async def test_modulation_sensors_only_register_when_reported(
     hass, mock_infinitude, config_entry
 ):
