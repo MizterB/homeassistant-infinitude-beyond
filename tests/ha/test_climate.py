@@ -91,22 +91,37 @@ async def test_set_heat_source_maps_slug_to_enum():
     entity.system.set_heat_source.assert_awaited_once_with(HeatSource.HEATPUMP)
 
 
-@pytest.mark.parametrize(
-    "action,attr,value",
-    [
-        (InfHVACAction.ACTIVE_COOL, "temperature_cool", 75.0),
-        (InfHVACAction.ACTIVE_HEAT, "temperature_heat", 68.0),
-    ],
-    ids=["cool", "heat"],
-)
-def test_target_temperature_in_auto_uses_zone_setpoint(action, attr, value):
-    # #72: the Auto branch referenced a nonexistent self.setpoint_* and crashed
-    # whenever a zone in Auto was actively heating/cooling.
+def test_target_temperature_is_none_in_auto():
+    # In Auto (HEAT_COOL), HA renders a low/high range on the thermostat card.
+    # target_temperature must be None so the card picks up the range instead of
+    # falling back to a single-setpoint display.
     entity, zone = _make_entity()
     zone.hvac_mode = InfHVACMode.AUTO
-    zone.hvac_action = action
+    zone.hvac_action = InfHVACAction.ACTIVE_COOL
+    zone.temperature_heat = 68.0
+    zone.temperature_cool = 75.0
+    assert entity.target_temperature is None
+    assert entity.target_temperature_low == 68.0
+    assert entity.target_temperature_high == 75.0
+
+
+@pytest.mark.parametrize(
+    "mode,attr,value",
+    [
+        (InfHVACMode.HEAT, "temperature_heat", 68.0),
+        (InfHVACMode.COOL, "temperature_cool", 75.0),
+    ],
+    ids=["heat", "cool"],
+)
+def test_target_temperature_single_mode_returns_setpoint(mode, attr, value):
+    # Single-setpoint modes populate target_temperature and leave high/low unset
+    # so the card renders one dot, not a range.
+    entity, zone = _make_entity()
+    zone.hvac_mode = mode
     setattr(zone, attr, value)
     assert entity.target_temperature == value
+    assert entity.target_temperature_low is None
+    assert entity.target_temperature_high is None
 
 
 async def test_preset_mode_reports_vacation():

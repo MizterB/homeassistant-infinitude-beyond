@@ -157,19 +157,10 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     @property
     def target_temperature(self) -> float:
         """Return the target temperature."""
+        # In Auto (HEAT_COOL), HA renders a range from target_temperature_high/low;
+        # returning a single value here suppresses the range on the thermostat card.
         if self.zone.hvac_mode == InfHVACMode.AUTO:
-            if self.zone.hvac_action in [
-                InfHVACAction.ACTIVE_HEAT,
-                InfHVACAction.PREP_HEAT,
-            ]:
-                return self.zone.temperature_heat
-            elif self.zone.hvac_action in [
-                InfHVACAction.ACTIVE_COOL,
-                InfHVACAction.PREP_COOL,
-            ]:
-                return self.zone.temperature_cool
-            else:
-                return self.zone.temperature_current
+            return None
 
         if self.zone.hvac_mode == InfHVACMode.HEAT:
             return self.zone.temperature_heat
@@ -182,11 +173,15 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
     @property
     def target_temperature_high(self) -> float:
         """Return the high target temperature."""
+        if self.zone.hvac_mode != InfHVACMode.AUTO:
+            return None
         return self.zone.temperature_cool
 
     @property
     def target_temperature_low(self) -> float:
         """Return the low target temperature."""
+        if self.zone.hvac_mode != InfHVACMode.AUTO:
+            return None
         return self.zone.temperature_heat
 
     async def async_set_temperature(self, **kwargs):
