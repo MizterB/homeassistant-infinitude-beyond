@@ -20,6 +20,7 @@ env/
 .mypy_cache/
 .coverage
 htmlcov/
+uv.lock
 
 # Home Assistant dev runtime (created by scripts/develop)
 /config/
