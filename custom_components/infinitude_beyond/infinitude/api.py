@@ -684,17 +684,29 @@ class InfinitudeSystem:
         """Parse a vacation window timestamp, tolerating single-digit fields."""
         if not isinstance(value, str):
             return None
+
+        # Added (Z)? to optionally capture the UTC marker
         matches = match(
-            r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2})(?::(\d{2}))?", value
+            r"^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z)?", value
         )
         if not matches:
             return None
+
         year, month, day, hour, minute = (int(g) for g in matches.groups()[:5])
         second = int(matches.group(6) or 0)
+
+        # Check if the 7th group matched the "Z"
+        is_utc = matches.group(7) == "Z"
+
         try:
-            return datetime(
-                year, month, day, hour, minute, second, tzinfo=self.local_timezone
-            )
+            from datetime import timezone
+            tz = timezone.utc if is_utc else self.local_timezone
+
+            dt = datetime(year, month, day, hour, minute, second, tzinfo=tz)
+
+            # Translate it back to the local timezone for Home Assistant display
+            return dt.astimezone(self.local_timezone)
+
         except ValueError:
             return None
 
