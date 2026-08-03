@@ -1160,13 +1160,26 @@ class InfinitudeZone:
         if until is None:
             until = self.activity_next_start
 
-        # Round until to the nearest 15-min interval
-        until_min = until.minute
-        nearest_fifteen = int(round(until_min / 15) * 15)
-        until = until + timedelta(minutes=nearest_fifteen - until_min)
+        until_str = ""
+        if until is not None:
+            # Round until to the nearest 15-min interval
+            until_min = until.minute
+            nearest_fifteen = int(round(until_min / 15) * 15)
+            until = until + timedelta(minutes=nearest_fifteen - until_min)
 
-        # Convert until to string
-        until_str = until.strftime("%H:%M")
+            # Convert until to string
+            until_str = until.strftime("%H:%M")
+        elif mode == HoldMode.UNTIL:
+            # There is no next scheduled activity to hold until.  This happens
+            # when the program has no enabled periods within the window that
+            # _update_activities() scans.  "Hold until the next activity" then
+            # means "hold indefinitely", so fall back to that instead of
+            # raising AttributeError on until.minute.
+            _LOGGER.debug(
+                "Zone %s has no next scheduled activity, holding indefinitely",
+                self.id,
+            )
+            mode = HoldMode.INDEFINITE
 
         # Use dedicated API endpoint for hold
         # See https://github.com/nebulous/infinitude/blob/3672528b5b977c60508c00f2cae092e616f4eef3/infinitude#L194
