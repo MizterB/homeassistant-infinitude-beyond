@@ -1061,15 +1061,20 @@ class InfinitudeZone:
             return None
         until_hh, until_mm = val.split(":")
         dt = self._infinitude.system.local_time
+        if dt is None:
+            return None
+        total_minutes = int(until_hh) * 60 + int(until_mm)
+        day_offset, minute_of_day = divmod(total_minutes, 24 * 60)
+        hour, minute = divmod(minute_of_day, 60)
         until_dt = datetime(
             dt.year,
             dt.month,
             dt.day,
-            int(until_hh),
-            int(until_mm),
+            hour,
+            minute,
             tzinfo=self._infinitude.system.local_timezone,
-        )
-        if until_dt < dt:
+        ) + timedelta(days=day_offset)
+        if day_offset == 0 and until_dt < dt:
             until_dt = until_dt + timedelta(days=1)
         return until_dt
 
