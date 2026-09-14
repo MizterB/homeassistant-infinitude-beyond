@@ -383,6 +383,19 @@ async def test_hold_until_prefers_config_otmr(infinitude):
     assert zone.hold_mode is HoldMode.UNTIL
 
 
+async def test_hold_until_normalizes_extended_hour(infinitude):
+    zcfg = next(z for z in infinitude._config["zones"]["zone"] if z["id"] == "1")
+    zcfg["hold"] = "on"
+    zcfg["holdActivity"] = "manual"
+    zcfg["otmr"] = "25:00"
+
+    zone = infinitude.zones["1"]
+    hold_until = zone.hold_until
+    assert hold_until is not None
+    assert hold_until.date() == infinitude.system.local_time.date() + timedelta(days=1)
+    assert (hold_until.hour, hold_until.minute) == (1, 0)
+
+
 async def test_hold_indefinite_when_otmr_forever(infinitude):
     # Infinitude stores otmr="forever" for an indefinite hold. hold_until must
     # treat that as no time component (and not crash on split(":")).
