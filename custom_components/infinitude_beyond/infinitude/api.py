@@ -335,34 +335,41 @@ class Infinitude:
 
     async def _update_status(self, status) -> None:
         """Status update handler."""
-        try:
-            changes = self._compare_data(self._status, status)
-            # Filter out changes that are only related to localTime
-            significant_changes = {k: v for k, v in changes.items() if k != "localTime"}
-            if significant_changes:
-                _LOGGER.debug("Status changed: %s", significant_changes)
-        except Exception as e:
-            _LOGGER.debug("Exception while comparing status changes: %s", e)
+        # The recursive diff exists purely to build a debug log line, so skip it
+        # entirely unless debug logging is on.
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            try:
+                changes = self._compare_data(self._status, status)
+                # Filter out changes that are only related to localTime
+                significant_changes = {
+                    k: v for k, v in changes.items() if k != "localTime"
+                }
+                if significant_changes:
+                    _LOGGER.debug("Status changed: %s", significant_changes)
+            except Exception as e:
+                _LOGGER.debug("Exception while comparing status changes: %s", e)
         self._status = status
 
     async def _update_config(self, config) -> None:
         """Config update handler."""
-        try:
-            changes = self._compare_data(self._config, config)
-            if changes:
-                _LOGGER.debug("Config changed: %s", changes)
-        except Exception as e:
-            _LOGGER.debug("Exception while comparing config changes: %s", e)
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            try:
+                changes = self._compare_data(self._config, config)
+                if changes:
+                    _LOGGER.debug("Config changed: %s", changes)
+            except Exception as e:
+                _LOGGER.debug("Exception while comparing config changes: %s", e)
         self._config = config
 
     async def _update_energy(self, energy) -> None:
         """Energy update handler."""
-        try:
-            changes = self._compare_data(self._energy, energy)
-            if changes:
-                _LOGGER.debug("Energy changed: %s", changes)
-        except Exception as e:
-            _LOGGER.debug("Exception while comparing energy changes: %s", e)
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            try:
+                changes = self._compare_data(self._energy, energy)
+                if changes:
+                    _LOGGER.debug("Energy changed: %s", changes)
+            except Exception as e:
+                _LOGGER.debug("Exception while comparing energy changes: %s", e)
         self._energy = energy
 
 
