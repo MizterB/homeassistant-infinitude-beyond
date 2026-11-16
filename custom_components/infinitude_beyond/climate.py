@@ -140,7 +140,7 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         super().__init__(coordinator, zone_id)
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         """Return the unit of measurement."""
         unit = self.zone.temperature_unit
         if unit == InfTemperatureUnit.CELSIUS:
@@ -150,12 +150,12 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         return None
 
     @property
-    def current_temperature(self) -> float:
+    def native_current_temperature(self) -> float:
         """Return the current temperature."""
         return self.zone.temperature_current
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the target temperature."""
         # In Auto (HEAT_COOL), HA renders a range from target_temperature_high/low;
         # returning a single value here suppresses the range on the thermostat card.
@@ -171,14 +171,14 @@ class InfinitudeClimate(InfinitudeEntity, ClimateEntity):
         return self.zone.temperature_current
 
     @property
-    def target_temperature_high(self) -> float | None:
+    def native_target_temperature_high(self) -> float | None:
         """Return the high target temperature."""
         if self.zone.hvac_mode != InfHVACMode.AUTO:
             return None
         return self.zone.temperature_cool
 
     @property
-    def target_temperature_low(self) -> float | None:
+    def native_target_temperature_low(self) -> float | None:
         """Return the low target temperature."""
         if self.zone.hvac_mode != InfHVACMode.AUTO:
             return None
@@ -439,14 +439,14 @@ class InfinitudeVacationClimate(InfinitudeEntity, ClimateEntity):
     _HA_TO_FAN = {v: k for k, v in _FAN_TO_HA.items()}
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         """Return the unit of measurement."""
         if self.system.temperature_unit == InfTemperatureUnit.CELSIUS:
             return UnitOfTemperature.CELSIUS
         return UnitOfTemperature.FAHRENHEIT
 
     @property
-    def current_temperature(self):
+    def native_current_temperature(self):
         """Vacation is system-wide; there's no single current temperature."""
         return None
 
@@ -456,12 +456,12 @@ class InfinitudeVacationClimate(InfinitudeEntity, ClimateEntity):
         return HVACMode.HEAT_COOL if self.system.vacation_enabled else HVACMode.OFF
 
     @property
-    def target_temperature_low(self):
+    def native_target_temperature_low(self):
         """Vacation heat setpoint."""
         return self.system.vacation_heat
 
     @property
-    def target_temperature_high(self):
+    def native_target_temperature_high(self):
         """Vacation cool setpoint."""
         return self.system.vacation_cool
 
